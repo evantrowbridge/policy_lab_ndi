@@ -3,28 +3,69 @@ title: "ndi_analysis"
 author: "Harris Policy Lab"
 date: "2/16/2021"
 output: html_document
+bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 # List of packages to install
-packages <- c("reticulate")
+packages <- c("tidyverse", "reticulate", "countrycode", "lubridate")
 
 # To install the packages, uncomment the line below and run it
-# install.packages(packages)
+#install.packages(packages)
 
 
-
+library(tidyverse)
 library(reticulate)
+library(countrycode)
+library(lubridate)
 
 ```
 
-```{r}
-print("hello world")
+```{r importing_and_merging}
+
+# Economist Intelligence Unit
+EIU_democracy_index_clean <- read_csv("data/EIU_democracy_index_clean.csv")
+df_eiu <- EIU_democracy_index_clean %>%
+  mutate(country_standard = countryname(Country)) %>%
+  rename(date_eiu = Date, year = Year) %>%
+  select(country_standard, year, Overall_score:`Regime type`)
+
+# COVID-19 data from Our World in Data
+owid_covid_data <- read_csv("data/owid-covid-data.csv")
+df_covid_owid <- owid_covid_data %>%
+  mutate(
+    country_standard = countryname(location),
+    date = mdy(date),
+    year = year(date)) %>%
+  select(country_standard, year, everything())
+
+# Merging datasets
+df_all <- df_covid_owid %>%
+  full_join(df_eiu, by = c("country_standard", "year")) %>%
+  select(country_standard, year, Overall_score:`Regime type`, everything()) %>%
+  mutate(post_covid = 
+           ifelse(year >= 2020,
+                  TRUE,
+                  FALSE))
+
+# Exporting dataset
+write_csv(df_all, "data/merged_data.csv")
 ```
+
+You can do python code, like in example chunk below.
 
 ```{python}
 print("hello world")
 ```
 
+## Resources:
+
+-   
+
+## Citations:
+
+This project uses the countrycode R package
+
+Arel-Bundock, Vincent, Nils Enevoldsen, and CJ Yetman, (2018). countrycode: An R package to convert country names and country codes. Journal of Open Source Software, 3(28), 848, <https://doi.org/10.21105/joss.00848>
