@@ -17,3 +17,5 @@ GitHub for Sharing NDI Code
 
     -   This comes from the [Economist Intelligence Unit (EIU) Democracy Index](https://www.eiu.com/n/campaigns/democracy-index-2020/).
     -   EIU published the data in a PDF. Gapminder collected and combined the data from the years 2006 to 2019 ([available here](https://www.gapminder.org/data/documentation/democracy-index/)). The 2020 pdf data was also published on the Democracy Index [Wikipedia page](https://en.wikipedia.org/wiki/Democracy_Index). We merge these data sets into a single data set.
+
+-   OGP_data.xlsx
