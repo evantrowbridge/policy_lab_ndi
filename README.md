@@ -4,7 +4,14 @@ GitHub for Sharing NDI Code
 
 ## Notes on Data:
 
--   owid-covid-data.csv ..+ This comes from Our Wold in Data. ..+ Data can be updated to most recent version here: <https://github.com/owid/covid-19-data/tree/master/public/data>
+-   merged_data.csv
+
+    -   A file that merges variables of interest from the data sets below.
+
+-   owid-covid-data.csv
+
+    -   This comes from Our Wold in Data.
+    -   Data can be updated to most recent version here: <https://github.com/owid/covid-19-data/tree/master/public/data>
 
 -   EIU_democracy_index_clean.csv
 
