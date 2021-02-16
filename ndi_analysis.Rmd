@@ -1,0 +1,30 @@
+---
+title: "ndi_analysis"
+author: "Harris Policy Lab"
+date: "2/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# List of packages to install
+packages <- c("reticulate")
+
+# To install the packages, uncomment the line below and run it
+# install.packages(packages)
+
+
+
+library(reticulate)
+
+```
+
+```{r}
+print("hello world")
+```
+
+```{python}
+print("hello world")
+```
+
