@@ -40,7 +40,7 @@ EIU_democracy_index_clean <- read_csv("data/EIU_democracy_index_clean.csv")
 df_eiu <- EIU_democracy_index_clean %>%
   clean_names() %>%
   mutate(country_standard = countryname(country)) %>%
-  # Adding "OGP" prefix to column names
+  # Adding "eiu" prefix to column names
   rename_with( 
   ~ paste("eiu", .x, sep = "_"), 
   overall_score:date) %>%
@@ -55,7 +55,7 @@ df_ogp <- OGP_data %>%
     country_code, 
     origin = "iso3c", 
     destination = "country.name")) %>%
-  # Adding "OGP" prefix to column names
+  # Adding "ogp" prefix to column names
   rename_with( 
   ~ paste("ogp", .x, sep = "_"), 
   date_joined:fiscal_openness_oversight) %>%
