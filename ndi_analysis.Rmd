@@ -70,8 +70,7 @@ library(lubridate)
     select(country_standard, year, eiu_overall_score:eiu_regime_type)
   
 ## Data from Open Government Partnership ##
-  import_OGP_data <- read_excel("data/OGP_data.xlsx", 
-      sheet = "Data")
+  import_OGP_data <- read_excel("data/OGP_data.xlsx")
   df_ogp <- import_OGP_data %>%
     clean_names() %>%
     mutate(
@@ -82,7 +81,7 @@ library(lubridate)
     # Adding "OGP" prefix to column names
     rename_with( 
     ~ paste("ogp", .x, sep = "_"), 
-    date_joined:fiscal_openness_oversight) %>%
+    c(date_joined, current_action_plan, open_budget_survey_transparency_score)) %>%
     select(country_standard, everything())
 
 ## WHO public health expenditures    
@@ -110,7 +109,7 @@ library(lubridate)
       median_age:aged_65_older,
       gdp_per_capita,
       eiu_overall_score:eiu_regime_type,
-      ogp_participating:ogp_fiscal_openness_oversight,
+      ogp_participating:ogp_average_score,
       who_pub_health_exp_percent_gdp,
       everything()) %>%
     filter(!(is.na(country_standard))) %>%
@@ -120,10 +119,10 @@ library(lubridate)
                     FALSE))
 
 # Exporting dataset
-#  write_csv(df_all, "data/merged_data.csv")
+  write_csv(df_all, "data/merged_data.csv")
 ```
 
-Note that the following country codes don't appear to be iso3c and don't match to a country name: ARBA, BRSP, CAON, CONR, ESMD, ESPV, FRPA, GBSC, GETB, GHST, IDBO, KEEM, KRSE, MXJL, NGKD, PELL, PHSC, ROIS, TZKG, USAU
+Note that for OGP data, the following country codes don't appear to be iso3c and don't match to a country name: ARBA, BRSP, CAON, CONR, ESMD, ESPV, FRPA, GBSC, GETB, GHST, IDBO, KEEM, KRSE, MXJL, NGKD, PELL, PHSC, ROIS, TZKG, USAU
 
 You can do python code, like in example chunk below.
 
