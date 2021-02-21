@@ -10,75 +10,117 @@ bibliography: references.bib
 knitr::opts_chunk$set(echo = TRUE)
 
 # List of packages to install
-packages <- c("tidyverse", "janitor", "reticulate", "countrycode", "lubridate")
+packages <- c("tidyverse", "readxl", "janitor", "reticulate", "countrycode", "Hmisc", "lubridate")
 
 # To install the packages, uncomment the line below and run it
 #install.packages(packages)
 
 library(tidyverse)
+library(readxl)
 library(janitor)
 library(reticulate)
 library(countrycode)
+library(Hmisc)
 library(lubridate)
 
 ```
 
 ```{r importing_and_merging}
 
-# COVID-19 data from Our World in Data
-owid_covid_data <- read_csv("data/owid-covid-data.csv")
-df_covid_owid <- owid_covid_data %>%
-  clean_names() %>%
-  mutate(
-    country_standard = countryname(location),
-    date = mdy(date),
-    year = year(date)) %>%
-  select(country_standard, year, everything())
+## COVID-19 data from Our World in Data ##
+  import_owid_covid_data <- read_csv("data/owid-covid-data.csv")
+  df_covid_owid <- import_owid_covid_data %>%
+    clean_names() %>%
+    mutate(
+      country_standard = countrycode(
+        iso_code, 
+        origin = "iso3c", 
+        destination = "country.name"),
+      name_country_standard = countryname(location),
+      date = mdy(date),
+      year = year(date)) %>%
+    select(country_standard, year, name_country_standard, everything())
+  
+## Economist Intelligence Unit ##
 
-# Economist Intelligence Unit
-EIU_democracy_index_clean <- read_csv("data/EIU_democracy_index_clean.csv")
-df_eiu <- EIU_democracy_index_clean %>%
-  clean_names() %>%
-  mutate(country_standard = countryname(country)) %>%
-  # Adding "eiu" prefix to column names
-  rename_with( 
-  ~ paste("eiu", .x, sep = "_"), 
-  overall_score:date) %>%
-  select(country_standard, year, eiu_overall_score:eiu_regime_type)
+    # The line below runs an R script that cleans the raw EIU data and 
+    #   merges it as the EIU_democracy_index_clean.csv file
+    source("data/raw_data/clean_eiu_raw.R", echo =  FALSE)
 
-# Data from Open Government Partnership
-OGP_data <- read_excel("data/OGP_data.xlsx", 
-    sheet = "Data")
-df_ogp <- OGP_data %>%
-  clean_names() %>%
-  mutate(country_standard = countrycode(
-    country_code, 
-    origin = "iso3c", 
-    destination = "country.name")) %>%
-  # Adding "ogp" prefix to column names
-  rename_with( 
-  ~ paste("ogp", .x, sep = "_"), 
-  date_joined:fiscal_openness_oversight) %>%
-  select(country_standard, everything())
+  import_EIU <- read_csv("data/EIU_democracy_index_clean.csv")
+  df_eiu <- import_EIU %>%
+    clean_names() %>%
+    mutate(
+      # Countries from 2020 are missing iso codes
+      geo =
+        ifelse(
+          is.na(geo),
+          countrycode(country, origin = 'country.name', destination = 'iso3c'),
+          geo
+          ),
+      country_standard = countrycode(
+        geo, 
+        origin = "iso3c", 
+        destination = "country.name"
+        )) %>%
+    # Adding "OGP" prefix to column names
+    rename_with( 
+    ~ paste("eiu", .x, sep = "_"), 
+    overall_score:date) %>%
+    select(country_standard, year, eiu_overall_score:eiu_regime_type)
+  
+## Data from Open Government Partnership ##
+  import_OGP_data <- read_excel("data/OGP_data.xlsx", 
+      sheet = "Data")
+  df_ogp <- import_OGP_data %>%
+    clean_names() %>%
+    mutate(
+      country_standard = countrycode(
+        country_code,
+        origin = "iso3c",
+        destination = "country.name")) %>%
+    # Adding "OGP" prefix to column names
+    rename_with( 
+    ~ paste("ogp", .x, sep = "_"), 
+    date_joined:fiscal_openness_oversight) %>%
+    select(country_standard, everything())
 
-# Merging datasets
-df_all <- df_covid_owid %>%
-  full_join(df_eiu, by = c("country_standard", "year")) %>%
-  full_join(df_ogp, by = "country_standard") %>%  
-  select(
-    country_standard, 
-    year, 
-    date,
-    eiu_overall_score:eiu_regime_type,
-    ogp_participating:ogp_fiscal_openness_oversight,
-    everything()) %>%
-  mutate(post_covid = 
-           ifelse(year >= 2020,
-                  TRUE,
-                  FALSE))
+## WHO public health expenditures    
+  import_pub_health_expenditures <- read_csv("data/public-health-expenditure-share-GDP-OWID.csv")
+  df_who_health_expend <- import_pub_health_expenditures %>%
+    clean_names() %>%
+    rename(who_pub_health_exp_percent_gdp = public_expenditure_on_health_percent_gdp_owid_extrapolated_series) %>%
+    mutate(country_standard = countrycode(
+      code, 
+      origin = "iso3c", 
+      destination = "country.name")) %>%
+    select(country_standard,year, who_pub_health_exp_percent_gdp, everything())
+  
+  label(df_who_health_expend$who_pub_health_exp_percent_gdp) <- "Public expenditure on health as a percent of GDP"
+
+### Merging datasets ###
+  df_all <- df_covid_owid %>%
+    full_join(df_eiu, by = c("country_standard", "year")) %>%
+    full_join(df_ogp, by = "country_standard") %>%  
+    full_join(df_who_health_expend, by = c("country_standard", "year")) %>%  
+    select(
+      country_standard, 
+      year, 
+      date,
+      median_age:aged_65_older,
+      gdp_per_capita,
+      eiu_overall_score:eiu_regime_type,
+      ogp_participating:ogp_fiscal_openness_oversight,
+      who_pub_health_exp_percent_gdp,
+      everything()) %>%
+    filter(!(is.na(country_standard))) %>%
+    mutate(post_covid = 
+             ifelse(year >= 2020,
+                    TRUE,
+                    FALSE))
 
 # Exporting dataset
-write_csv(df_all, "data/merged_data.csv")
+#  write_csv(df_all, "data/merged_data.csv")
 ```
 
 Note that the following country codes don't appear to be iso3c and don't match to a country name: ARBA, BRSP, CAON, CONR, ESMD, ESPV, FRPA, GBSC, GETB, GHST, IDBO, KEEM, KRSE, MXJL, NGKD, PELL, PHSC, ROIS, TZKG, USAU
@@ -88,6 +130,34 @@ You can do python code, like in example chunk below.
 ```{python}
 print("hello world")
 ```
+
+## Notes:
+
+Additional ideas for controls:
+
+-   df_covid_owid
+
+    -   "population_density"
+
+    -   "gdp_per_capita"
+
+    -   "extreme_poverty"
+
+    -   "cardiovasc_death_rate"
+
+    -   "diabetes_prevalence"
+
+    -   "female_smokers"
+
+    -   "male_smokers"
+
+    -   "handwashing_facilities"
+
+    -   "hospital_beds_per_thousand"
+
+    -   "life_expectancy"
+
+    -   "human_development_index"
 
 ## Resources:
 
