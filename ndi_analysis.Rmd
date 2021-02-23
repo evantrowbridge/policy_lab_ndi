@@ -3,12 +3,14 @@ title: "ndi_analysis"
 author: "Harris Policy Lab"
 date: "2/16/2021"
 output: html_document
-bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE,
+	include = FALSE
+)
 # List of packages to install
 packages <- c("tidyverse", "readxl", "janitor", "reticulate", "countrycode", "Hmisc", "lubridate", "skimr", "haven")
 
@@ -27,7 +29,7 @@ library(haven)
 
 ```
 
-```{r functions}
+```{r functions, message=FALSE, warning=FALSE, include=FALSE}
 
 year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
 # Source: https://stackoverflow.com/questions/24519794/r-max-function-ignore-na/24520992
@@ -35,7 +37,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
 ```
 
 
-```{r importing_and_merging}
+```{r importing_and_merging, message=FALSE, warning=FALSE, include=FALSE}
 
 ## COVID-19 data from Our World in Data ##
   import_owid_covid_data <- read_csv("data/owid-covid-data.csv", 
@@ -178,7 +180,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     rename_with( 
     ~ paste("eiu", .x, sep = "_"), 
     overall_score:date) %>%
-    select(country_standard, year, eiu_overall_score:eiu_regime_type)
+    select(country_standard, year, eiu_overall_score:eiu_regime_type, -eiu_rank, -eiu_rank_change)
 
 ########################################    
       
@@ -286,12 +288,29 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   import_africa_integrity <- read_excel("data/Africa_Integrity_Indictors_CLEAN_22021.xlsx", na = "n/a")
   
   df_africa_int <- import_africa_integrity %>%
-    select(-ID) %>%
-    clean_names() 
+    clean_names()  %>% 
+    select(
+      country,
+      year,
+      in_practice_citizens_can_access_the_results_and_documents_associated_with_procurement_contracts_full_contract_proposals_execution_reports_financial_audits_etc,
+      in_law_citizens_have_a_right_to_request_public_information_from_state_bodies,
+      in_practice_citizen_requests_for_public_information_are_effective,
+      in_practice_citizens_can_access_legislative_processes_and_documents,
+      in_law_senior_officials_of_the_three_branches_of_government_including_heads_of_state_and_government_ministers_members_of_parliament_judges_etc_are_required_to_disclose_records_of_their_assets_and_disclosures_are_public,
+      in_law_political_parties_are_required_to_regularly_disclose_private_donations,
+      in_law_corruption_is_criminalized_as_a_specific_offense,
+      in_practice_the_body_bodies_that_investigate_s_allegations_of_public_sector_corruption_is_are_effective,
+      in_law_civil_servants_who_report_cases_of_corruption_are_protected_from_recrimination_or_other_negative_consequences,
+      in_law_there_is_an_independent_body_bodies_mandated_to_receive_and_investigate_cases_of_alleged_public_sector_corruption
+    )
   
-  names(df_africa_int) <- names(df_africa_int) %>% str_remove("^in_")
-  names(df_africa_int) <- abbreviate(names(df_africa_int), minlength = 8)
-  names(df_africa_int) <- names(df_africa_int) %>% str_replace_all("\\_{2,}", "")
+  names(df_africa_int) <- names(df_africa_int) %>% 
+    str_remove("^in_practice_") %>% 
+    str_remove("^in_law_") %>% 
+    str_trunc(32,  ellipsis = "")
+    
+  #names(df_africa_int) <- abbreviate(names(df_africa_int), minlength = 16)
+  #names(df_africa_int) <- names(df_africa_int) %>% str_replace_all("\\_{2,}", "")
   names(df_africa_int) <- names(df_africa_int) %>% make.unique()
   
   df_africa_int <- df_africa_int %>%
@@ -306,12 +325,12 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
         origin = "iso3c", 
         destination = "country.name"
         )) %>%
+    select(country_standard, year, everything(), -country) %>%    
     # Adding "afr_int" prefix to column names
     rename_with( 
     ~ paste("afr_int", .x, sep = "_"), 
-    lw_th_n:prctc_thr) %>%
-    filter(!is.na(year)) %>%
-    select(country_standard, everything(), -country)
+    !(country_standard:year)) %>%
+    filter(!is.na(year))
   
 ########################################    
   
@@ -328,12 +347,6 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       origin = "iso3c", 
       destination = "country.name")) %>%
     select(country_standard, year, pub_health_exp_percent_gdp, everything())
-  
-  #label(df_gdp_health_expend$pub_health_exp_percent_gdp) <- "Public expenditure on health as a percent of GDP"
-  
-  # df_gdp_health_expend$pub_health_exp_percent_gdp <- labelled(
-  #   df_gdp_health_expend$pub_health_exp_percent_gdp,
-  #   label = "Public expenditure on health as a percent of GDP")
 
   attr(df_gdp_health_expend$pub_health_exp_percent_gdp, "label") <- "Public expenditure on health as a percent of GDP"
     
@@ -409,7 +422,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     full_join(df_percap_health_expend, by = c("country_standard", "year")) %>%
     full_join(df_gdp, by = c("country_standard", "year")) %>%
     full_join(df_gini, by = "country_standard") %>%
-    #full_join(df_africa_int, by = c("country_standard", "year")) %>%
+    full_join(df_africa_int, by = c("country_standard", "year")) %>%
     select(
       country_standard, 
       year, 
@@ -419,7 +432,12 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       eiu_overall_score:eiu_regime_type,
       ogp_participating:ogp_average_score,
       pub_health_exp_percent_gdp,
-      everything()) %>%
+      everything(),
+      -name_country_standard,
+      -location,
+      -code.x,
+      -entity
+      ) %>%
     mutate(post_covid = 
              ifelse(year >= 2020,
                     TRUE,
@@ -457,7 +475,13 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       eiu_overall_score:eiu_regime_type,
       ogp_participating:ogp_average_score,
       pub_health_exp_percent_gdp,
-      everything()) %>%
+      everything(),
+      -name_country_standard,
+      -location,
+      -code.x,
+      -code.y
+      -entity
+      ) %>%
     mutate(post_covid = 
              ifelse(year >= 2020,
                     TRUE,
@@ -466,6 +490,9 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     # Limiting to the year 2006 and later
           # Some data (including WGI and Gini index) go back further
     df_all_yr <- df_all_yr %>% filter(year >= 2006)
+    
+    # Looking specifically at 2020
+    df_all_yr_2020 <- df_all_yr %>% filter(year == 2020)
   
     # Exporting df_all_yr
     write_csv(df_all_yr, "data/merged_data_yr.csv")
@@ -476,20 +503,35 @@ Reviewing the data
 
 A helpful link for issues: https://github.com/ropensci/skimr/issues/606
 
-```{r}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 skim_all <- skim(df_all)
 skim_all_yr <- skim(df_all_yr)
+skim_all_yr_2020 <- skim(df_all_yr_2020)
 
+```
+
+# All Data (individual dates)
+
+```{r}
 skim_all
-
-skim_yr
 ```
 
 
+# All Data (annual)
+
+```{r}
+skim_all_yr
+```
+
+# All Data (2020 only)
+
+```{r}
+skim_all_yr_2020
+```
 
 You can do python code, like in example chunk below.
 
-```{python}
+```{python include=FALSE}
 print("hello world")
 ```
 

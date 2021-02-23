@@ -9,6 +9,10 @@ GitHub for Sharing NDI Code
     -   A file that merges variables of interest from the data sets below.
     -   This file is large and stored on Google Drive instead of GitHub
 
+-   merged_data_yr.csv
+
+    -   Same as me
+
 -   owid-covid-data.csv
 
     -   This comes from Our Wold in Data.
@@ -21,6 +25,8 @@ GitHub for Sharing NDI Code
 
 -   public-health-expenditure-share-GDP-OWID.csv
 
+    -   Public expenditure on health as a percent of GDP.
+    -   Only covers years 2006 - 2014
     -   This comes from [Our World in Data](https://ourworldindata.org/grapher/public-health-expenditure-share-gdp-owid), using data from the WHO
 
 -   OGP_data.xlsx
