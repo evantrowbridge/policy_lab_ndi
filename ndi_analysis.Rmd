@@ -476,10 +476,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       ogp_participating:ogp_average_score,
       pub_health_exp_percent_gdp,
       everything(),
-      -name_country_standard,
-      -location,
       -code.x,
-      -code.y
       -entity
       ) %>%
     mutate(post_covid = 
