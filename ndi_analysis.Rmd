@@ -174,7 +174,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
         origin = "iso3c", 
         destination = "country.name"
         )) %>%
-    # Adding "OGP" prefix to column names
+    # Adding "eiu" prefix to column names
     rename_with( 
     ~ paste("eiu", .x, sep = "_"), 
     overall_score:date) %>%
@@ -197,7 +197,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
         country_code,
         origin = "iso3c",
         destination = "country.name")) %>%
-    # Adding "OGP" prefix to column names
+    # Adding "ogp" prefix to column names
     rename_with( 
     ~ paste("ogp", .x, sep = "_"), 
     c(date_joined, current_action_plan, open_budget_survey_transparency_score)) %>%
@@ -229,7 +229,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     # Adding "wgi" prefix to indicators
     rename_with( 
       ~ paste("wgi", .x, sep = "_"),
-      voice_and_accountability_x:voice_and_accountability_y) %>%
+      voice_and_accountability:control_of_corruption) %>%
     select(country_standard, year, everything(), -x1, -country, -iso_code)
   
 ########################################    
@@ -250,6 +250,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
           origin = "iso3c", 
           destination = "country.name"
           )) %>%
+    # Adding "vdem" prefix to indicators      
     rename_with( 
       ~ paste("vdem", .x, sep = "_"),
       v2x_libdem:v2x_cspart) %>%

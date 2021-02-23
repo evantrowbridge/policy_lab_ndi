@@ -47,12 +47,14 @@ GitHub for Sharing NDI Code
 
 -   Worldwide_Governance_Indicators_clean.csv
 
-    -   Kimiko, can you add info (the source and a link)?
+    -   This comes from the [Worldwide_Governance_Indicators](https://info.worldbank.org/governance/wgi/).
+    -   We merge data of two indicators (Voice and Accountability and Control of Corruption) into a single data set.
 
 -   vdem_clean.csv
 
-    -   Kimiko, can you add info (the source and a link)?
-
+    -   This comes from the [V-Dem Dataset - Version 10](https://www.v-dem.net/en/data/data/v-dem-dataset/).
+    -   Data can be updated to most recent version here: <https://www.v-dem.net/en/data/data/v-dem-dataset-v11/>
+    -   We downloaded "Country-Year: V-Dem Core" data and merged three indicators (v2x_libdem: Liberal democracy index), v2x_partipdem: Participatory democracy index, v2x_cspart: Civil society participation index)
     -   This data goes back many years. We include data starting in 2006
 
 -   Freedom_house.xlsx
