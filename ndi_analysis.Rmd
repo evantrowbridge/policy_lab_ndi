@@ -25,10 +25,26 @@ library(lubridate)
 
 ```
 
+```{r functions}
+
+year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
+# Source: https://stackoverflow.com/questions/24519794/r-max-function-ignore-na/24520992
+
+```
+
+
 ```{r importing_and_merging}
 
 ## COVID-19 data from Our World in Data ##
-  import_owid_covid_data <- read_csv("data/owid-covid-data.csv")
+  import_owid_covid_data <- read_csv("data/owid-covid-data.csv", 
+                                     col_types = cols(
+                                       iso_code = col_character(), 
+                                       continent = col_character(), 
+                                       location = col_character(), 
+                                       date = col_date(format = "%m/%d/%Y"),
+                                       tests_units = col_character(),
+                                     .default = col_double()))
+  
   df_covid_owid <- import_owid_covid_data %>%
     clean_names() %>%
     mutate(
@@ -37,9 +53,98 @@ library(lubridate)
         origin = "iso3c", 
         destination = "country.name"),
       name_country_standard = countryname(location),
-      date = mdy(date),
       year = year(date)) %>%
-    select(country_standard, year, name_country_standard, everything())
+    select(country_standard, year, date, name_country_standard, everything())
+  
+  # Summarizing COVID-19 data by year (previous data frame was daily)
+  df_covid_owid_yr <- df_covid_owid %>%
+    group_by(country_standard, year) %>%
+    # Getting max values for the following variables by year and country
+    # These vall\ues all begin with "comb"
+    mutate(
+      comb_total_cases = 
+        year_max(total_cases),
+      comb_total_deaths = 
+        year_max(total_deaths),
+      comb_total_cases_per_million = 
+        year_max(total_cases_per_million),
+      comb_total_deaths_per_million = 
+        year_max(total_deaths_per_million),
+      comb_total_tests = 
+        year_max(total_tests),
+      comb_total_tests_per_thousand = 
+        year_max(total_tests_per_thousand),
+      comb_total_vaccinations = 
+        year_max(total_vaccinations),
+      comb_people_vaccinated = 
+        year_max(people_vaccinated),
+      comb_people_fully_vaccinated = 
+        year_max(people_fully_vaccinated),
+      comb_total_vaccinations_per_hundred = 
+        year_max(total_vaccinations_per_hundred),
+      comb_people_vaccinated_per_hundred = 
+        year_max(people_vaccinated_per_hundred),
+      comb_people_fully_vaccinated_per_hundred = 
+        year_max(people_fully_vaccinated_per_hundred)) %>%
+    summarise(across(where(is.numeric), mean, na.rm = TRUE), .groups = "keep") %>%
+    ungroup() %>%
+    group_by(country_standard) %>%
+    arrange(year) %>%
+    # Dividing totals by year
+    mutate(
+      total_cases = ifelse(
+        year == 2020,
+        comb_total_cases,
+        comb_total_cases - lag(comb_total_cases)),
+      total_deaths = ifelse(
+        year == 2020,
+        comb_total_deaths,
+        comb_total_deaths - lag(comb_total_deaths)),
+      total_cases_per_million = ifelse(
+        year == 2020,
+        comb_total_cases_per_million,
+        comb_total_cases_per_million - lag(comb_total_cases_per_million)),
+      total_deaths_per_million = ifelse(
+        year == 2020,
+        comb_total_deaths_per_million,
+        comb_total_deaths_per_million - lag(comb_total_deaths_per_million)),
+      total_tests = ifelse(
+        year == 2020,
+        comb_total_tests,
+        comb_total_tests - lag(comb_total_tests)),
+      total_tests_per_thousand = ifelse(
+        year == 2020,
+        comb_total_tests_per_thousand,
+        comb_total_tests_per_thousand - lag(comb_total_tests_per_thousand)),
+      total_vaccinations = ifelse(
+        year == 2020,
+        comb_total_vaccinations,
+        comb_total_vaccinations - lag(comb_total_vaccinations)),
+      people_vaccinated = ifelse(
+        year == 2020,
+        comb_people_vaccinated,
+        comb_people_vaccinated - lag(comb_people_vaccinated)),
+      people_fully_vaccinated = ifelse(
+        year == 2020,
+        comb_people_fully_vaccinated,
+        comb_people_fully_vaccinated - lag(comb_people_fully_vaccinated)),
+      total_vaccinations_per_hundred = ifelse(
+        year == 2020,
+        comb_total_vaccinations_per_hundred,
+        comb_total_vaccinations_per_hundred - lag(comb_total_vaccinations_per_hundred)),
+      people_vaccinated_per_hundred = ifelse(
+        year == 2020,
+        comb_people_vaccinated_per_hundred,
+        comb_people_vaccinated_per_hundred - lag(comb_people_vaccinated_per_hundred)),
+      people_fully_vaccinated_per_hundred = ifelse(
+        year == 2020,
+        comb_people_fully_vaccinated_per_hundred,
+        comb_people_fully_vaccinated_per_hundred - lag(comb_people_fully_vaccinated_per_hundred)),
+      ) %>%
+    ungroup() %>%
+    arrange(country_standard, year)
+
+########################################      
   
 ## Economist Intelligence Unit ##
 
@@ -48,6 +153,7 @@ library(lubridate)
     source("data/raw_data/clean_eiu_raw.R", echo =  FALSE)
 
   import_EIU <- read_csv("data/EIU_democracy_index_clean.csv")
+  
   df_eiu <- import_EIU %>%
     clean_names() %>%
     mutate(
@@ -68,9 +174,13 @@ library(lubridate)
     ~ paste("eiu", .x, sep = "_"), 
     overall_score:date) %>%
     select(country_standard, year, eiu_overall_score:eiu_regime_type)
-  
+
+########################################    
+      
 ## Data from Open Government Partnership ##
+  
   import_OGP_data <- read_excel("data/OGP_data.xlsx")
+  
   df_ogp <- import_OGP_data %>%
     clean_names() %>%
     mutate(
@@ -84,24 +194,193 @@ library(lubridate)
     c(date_joined, current_action_plan, open_budget_survey_transparency_score)) %>%
     select(country_standard, everything())
 
-## WHO public health expenditures    
-  import_pub_health_expenditures <- read_csv("data/public-health-expenditure-share-GDP-OWID.csv")
-  df_who_health_expend <- import_pub_health_expenditures %>%
+########################################    
+  
+## WGI indicators ##
+  
+  import_Worldwide_Governance_Indicators_clean <- read_csv("data/Worldwide_Governance_Indicators_clean.csv")
+  
+  df_wgi <- import_Worldwide_Governance_Indicators_clean %>%
     clean_names() %>%
+    rename(country = country_territory) %>%
+    # The countrycodes package does not include Kosovo or the Netherlands Antilles
+    filter(!country %in% c("Kosovo", "Netherlands Antilles (former)")) %>%
+    mutate(
+      country = case_when(
+        code == "CIV" ~ "Ivory Coast",
+        code == "STP" ~ "Sao Tome and Principe",
+        code == "REU" ~ "Reunion",
+        TRUE ~ country),
+      iso_code = countrycode(country, origin = 'country.name', destination = 'iso3c'),        
+      country_standard = countrycode(
+          iso_code, 
+          origin = "iso3c", 
+          destination = "country.name"
+          )) %>%
+    # Adding "wgi" prefix to indicators
+    rename_with( 
+      ~ paste("wgi", .x, sep = "_"),
+      voice_and_accountability_x:voice_and_accountability_y) %>%
+    select(country_standard, year, everything(), -x1, -country, -iso_code)
+  
+########################################    
+  
+## V-Dem indicators ##
+  
+  import_vdem_clean <- read_csv("data/vdem_clean.csv")
+  
+  df_vdem <- import_vdem_clean %>%
+    clean_names() %>%
+    # This data set has a very large range of years. Limiting to 2006 and later
+    filter(year >= 2006) %>%
+    filter(!country_name %in% c("Kosovo", "Somaliland", "Zanzibar")) %>%  
+    mutate(
+      iso_code = countrycode(country_name, origin = 'country.name', destination = 'iso3c'),        
+      country_standard = countrycode(
+          iso_code, 
+          origin = "iso3c", 
+          destination = "country.name"
+          )) %>%
+    rename_with( 
+      ~ paste("vdem", .x, sep = "_"),
+      v2x_libdem:v2x_cspart) %>%
+    select(country_standard, year, everything(), -country_name, -iso_code)    
+  
+########################################    
+  
+## Freedom House indicators ##
+  import_Freedom_house <- read_excel("data/Freedom_house.xlsx")
+  
+  df_fh <- import_Freedom_house %>%
+    clean_names() %>%
+    select(-country_territory) %>%
+    filter(!countries %in% 
+             c('Abkhazia', 'Crimea', 'Eastern Donbas', 'Kosovo', 'Micronesia',
+               'Nagorno-Karabakh', 'Somaliland', 'South Ossetia', 'Tibet',
+               'Transnistria')) %>%    
+    pivot_longer(!countries, names_to = "year", values_to = "fh_indicator") %>%
+    mutate(
+      iso_code = countrycode(countries, origin = 'country.name', destination = 'iso3c'),        
+      country_standard = countrycode(
+          iso_code, 
+          origin = "iso3c", 
+          destination = "country.name"),
+      year = as.numeric(str_remove(year, "x"))) %>%
+    select(country_standard, year, fh_indicator) %>%
+    arrange(country_standard, year)
+    
+########################################    
+  
+## Public health expenditures as share of GDP   
+  import_gdp_pub_health_expenditures <- read_csv("data/public-health-expenditure-share-GDP-OWID.csv")
+  
+  df_gdp_health_expend <- import_gdp_pub_health_expenditures %>%
+    clean_names() %>%
+    # This data set has a very large range of years. Limiting to 2006 and later    
+    filter(year >= 2006) %>%
     rename(who_pub_health_exp_percent_gdp = public_expenditure_on_health_percent_gdp_owid_extrapolated_series) %>%
     mutate(country_standard = countrycode(
       code, 
       origin = "iso3c", 
       destination = "country.name")) %>%
-    select(country_standard,year, who_pub_health_exp_percent_gdp, everything())
+    select(country_standard, year, who_pub_health_exp_percent_gdp, everything())
   
-  label(df_who_health_expend$who_pub_health_exp_percent_gdp) <- "Public expenditure on health as a percent of GDP"
+  label(df_gdp_health_expend$who_pub_health_exp_percent_gdp) <- "Public expenditure on health as a percent of GDP"
 
+########################################    
+  
+##  Public health expenditures per capita ##
+  
+  import_percap_Public_Health_Expenditure <- read_csv("data/WB_Public_Health_Expenditure_v2.csv")
+  
+  df_percap_health_expend <- import_percap_Public_Health_Expenditure %>%
+    clean_names() %>%
+    # The data includes entries for "Arab World" as a country. Removing that.
+    filter(abbreviation != "ARB") %>%
+    mutate(country_standard = countrycode(
+      abbreviation, 
+      origin = "iso3c", 
+      destination = "country.name")) %>%
+    rename(percap_domestic_health_expenditure = domestic_health_expenditure) %>%
+    select(country_standard, year, everything(), -country_name, -abbreviation)
+
+########################################      
+    
+## GDP Data ##
+  
+  # We're using GDP as a control variable
+  import_GDP_data <- read_excel("data/GDP_data.xlsx")
+  
+  df_gdp <- import_GDP_data %>%
+    clean_names() %>%
+    mutate(country_standard = countrycode(
+      country_code, 
+      origin = "wb", 
+      destination = "country.name")) %>%
+    filter(!is.na(country_standard)) %>%
+    select(country_standard, year, gdp)
+    
+########################################    
+  
+## Gini Coefficient ##
+  
+  # We're using the Gini coefficient as a control variable
+  import_Gini_coefficient_2020 <- read_csv("data/Gini_coefficient_2020.csv")
+  
+  df_gini <- import_Gini_coefficient_2020 %>%
+    clean_names() %>%
+      mutate(
+        iso_code = countrycode(country, origin = 'country.name', destination = 'iso3c'),
+        country_standard = countrycode(
+          iso_code, 
+          origin = "iso3c", 
+          destination = "country.name"
+          )) %>%
+    rename(gini_2020 = gini_coefficient_2020_data) %>%
+    select(country_standard, gini_2020)  
+
+########################################      
+    
+## Africa Integrity Indicators ##
+  
+  import_africa_integrity <- read_excel("data/Africa_Integrity_Indictors_CLEAN_22021.xlsx", na = "n/a")
+  
+  df_africa_int <- import_africa_integrity %>%
+    select(-ID) %>%
+    clean_names() %>%
+    mutate(
+      country = ifelse(
+        country == "sundan",
+        "sudan",
+        country),
+      iso_code = countrycode(country, origin = 'country.name', destination = 'iso3c'),
+      country_standard = countrycode(
+        iso_code, 
+        origin = "iso3c", 
+        destination = "country.name"
+        )) %>%
+    # Adding "afr_int" prefix to column names
+    rename_with( 
+    ~ paste("afr_int", .x, sep = "_"), 
+    in_law_the_independence_of_the_judiciary_is_guaranteed:
+      in_practice_there_is_a_death_registration_system_and_citizens_can_obtain_certificates_for_deceased_family_members) %>%
+    filter(!is.na(year)) %>%
+    select(country_standard, everything(), -country)
+
+########################################      
+  
 ### Merging datasets ###
   df_all <- df_covid_owid %>%
     full_join(df_eiu, by = c("country_standard", "year")) %>%
     full_join(df_ogp, by = "country_standard") %>%  
-    full_join(df_who_health_expend, by = c("country_standard", "year")) %>%  
+    full_join(df_wgi, by = c("country_standard", "year")) %>%  
+    full_join(df_vdem, by = c("country_standard", "year")) %>%    
+    full_join(df_fh, by = c("country_standard", "year")) %>%       
+    full_join(df_gdp_health_expend, by = c("country_standard", "year")) %>%
+    full_join(df_percap_health_expend, by = c("country_standard", "year")) %>%
+    full_join(df_gdp, by = c("country_standard", "year")) %>%
+    full_join(df_gini, by = "country_standard") %>%
+    full_join(df_africa_int, by = c("country_standard", "year")) %>%
     select(
       country_standard, 
       year, 
@@ -112,17 +391,24 @@ library(lubridate)
       ogp_participating:ogp_average_score,
       who_pub_health_exp_percent_gdp,
       everything()) %>%
-    filter(!(is.na(country_standard))) %>%
     mutate(post_covid = 
              ifelse(year >= 2020,
                     TRUE,
                     FALSE))
 
+  # Looking at entries where ISO codes didn't match with a country
+  df_no_country <- df_all %>% filter((is.na(country_standard)))
+  
+  # Removing entries with missing country_standard name
+  df_all <- df_all %>% filter(!(is.na(country_standard)))
+  
+  # Limiting to the year 2006 and later
+  df_all <- df_all %>% filter(year >= 2006)
+
 # Exporting dataset
   write_csv(df_all, "data/merged_data.csv")
 ```
 
-Note that for OGP data, the following country codes don't appear to be iso3c and don't match to a country name: ARBA, BRSP, CAON, CONR, ESMD, ESPV, FRPA, GBSC, GETB, GHST, IDBO, KEEM, KRSE, MXJL, NGKD, PELL, PHSC, ROIS, TZKG, USAU
 
 You can do python code, like in example chunk below.
 
