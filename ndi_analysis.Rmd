@@ -10,7 +10,7 @@ bibliography: references.bib
 knitr::opts_chunk$set(echo = TRUE)
 
 # List of packages to install
-packages <- c("tidyverse", "readxl", "janitor", "reticulate", "countrycode", "Hmisc", "lubridate")
+packages <- c("tidyverse", "readxl", "janitor", "reticulate", "countrycode", "Hmisc", "lubridate", "skimr", "haven")
 
 # To install the packages, uncomment the line below and run it
 #install.packages(packages)
@@ -22,6 +22,8 @@ library(reticulate)
 library(countrycode)
 library(Hmisc)
 library(lubridate)
+library(skimr)
+library(haven)
 
 ```
 
@@ -47,6 +49,9 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   
   df_covid_owid <- import_owid_covid_data %>%
     clean_names() %>%
+    filter(!iso_code %in% c('OWID_AFR', 'OWID_ASI', 'OWID_EUN', 'OWID_EUR',
+                                'OWID_INT', 'OWID_KOS', 'OWID_NAM', 'OWID_NCY',
+                                'OWID_OCE', 'OWID_SAM', 'OWID_WRL')) %>%
     mutate(
       country_standard = countrycode(
         iso_code, 
@@ -139,11 +144,11 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       people_fully_vaccinated_per_hundred = ifelse(
         year == 2020,
         comb_people_fully_vaccinated_per_hundred,
-        comb_people_fully_vaccinated_per_hundred - lag(comb_people_fully_vaccinated_per_hundred)),
+        comb_people_fully_vaccinated_per_hundred - lag(comb_people_fully_vaccinated_per_hundred))
       ) %>%
     ungroup() %>%
     arrange(country_standard, year)
-
+    
 ########################################      
   
 ## Economist Intelligence Unit ##
@@ -183,6 +188,10 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   
   df_ogp <- import_OGP_data %>%
     clean_names() %>%
+    filter(!country_code %in% c(
+      'ARBA', 'BRSP', 'CAON', 'CONR', 'ESMD', 'ESPV', 'FRPA', 'GBSC', 'GETB', 
+      'GHST', 'IDBO', 'KEEM', 'KRSE', 'MXJL', 'NGKD', 'PELL', 'PHSC', 'ROIS', 
+      'TZKG', 'USAU')) %>%    
     mutate(
       country_standard = countrycode(
         country_code,
@@ -269,7 +278,41 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       year = as.numeric(str_remove(year, "x"))) %>%
     select(country_standard, year, fh_indicator) %>%
     arrange(country_standard, year)
+  
+########################################      
     
+## Africa Integrity Indicators ##
+  
+  import_africa_integrity <- read_excel("data/Africa_Integrity_Indictors_CLEAN_22021.xlsx", na = "n/a")
+  
+  df_africa_int <- import_africa_integrity %>%
+    select(-ID) %>%
+    clean_names() 
+  
+  names(df_africa_int) <- names(df_africa_int) %>% str_remove("^in_")
+  names(df_africa_int) <- abbreviate(names(df_africa_int), minlength = 8)
+  names(df_africa_int) <- names(df_africa_int) %>% str_replace_all("\\_{2,}", "")
+  names(df_africa_int) <- names(df_africa_int) %>% make.unique()
+  
+  df_africa_int <- df_africa_int %>%
+    mutate(
+      country = ifelse(
+        country == "sundan",
+        "sudan",
+        country),
+      iso_code = countrycode(country, origin = 'country.name', destination = 'iso3c'),
+      country_standard = countrycode(
+        iso_code, 
+        origin = "iso3c", 
+        destination = "country.name"
+        )) %>%
+    # Adding "afr_int" prefix to column names
+    rename_with( 
+    ~ paste("afr_int", .x, sep = "_"), 
+    lw_th_n:prctc_thr) %>%
+    filter(!is.na(year)) %>%
+    select(country_standard, everything(), -country)
+  
 ########################################    
   
 ## Public health expenditures as share of GDP   
@@ -279,15 +322,21 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     clean_names() %>%
     # This data set has a very large range of years. Limiting to 2006 and later    
     filter(year >= 2006) %>%
-    rename(who_pub_health_exp_percent_gdp = public_expenditure_on_health_percent_gdp_owid_extrapolated_series) %>%
+    rename(pub_health_exp_percent_gdp = public_expenditure_on_health_percent_gdp_owid_extrapolated_series) %>%
     mutate(country_standard = countrycode(
       code, 
       origin = "iso3c", 
       destination = "country.name")) %>%
-    select(country_standard, year, who_pub_health_exp_percent_gdp, everything())
+    select(country_standard, year, pub_health_exp_percent_gdp, everything())
   
-  label(df_gdp_health_expend$who_pub_health_exp_percent_gdp) <- "Public expenditure on health as a percent of GDP"
+  #label(df_gdp_health_expend$pub_health_exp_percent_gdp) <- "Public expenditure on health as a percent of GDP"
+  
+  # df_gdp_health_expend$pub_health_exp_percent_gdp <- labelled(
+  #   df_gdp_health_expend$pub_health_exp_percent_gdp,
+  #   label = "Public expenditure on health as a percent of GDP")
 
+  attr(df_gdp_health_expend$pub_health_exp_percent_gdp, "label") <- "Public expenditure on health as a percent of GDP"
+    
 ########################################    
   
 ##  Public health expenditures per capita ##
@@ -314,8 +363,15 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   
   df_gdp <- import_GDP_data %>%
     clean_names() %>%
+    filter(!country_code %in% 
+    c('ARB', 'CEB', 'CSS', 'EAP', 'EAR', 'EAS', 'ECA', 'ECS', 'EMU', 'EUU', 
+    'FCS', 'HIC', 'HPC', 'IBD', 'IBT', 'IDA', 'IDB', 'IDX', 'INX', 'LAC', 
+    'LCN', 'LDC', 'LIC', 'LMC', 'LMY', 'LTE', 'MEA', 'MIC', 'MNA', 'NAC', 
+    'OED', 'OSS', 'PRE', 'PSS', 'PST', 'SAS', 'SSA', 'SSF', 'SST', 'TEA', 
+    'TEC', 'TLA', 'TMN', 'TSA', 'TSS', 'UMC', 'WLD')) %>%
     mutate(country_standard = countrycode(
       country_code, 
+      # Note that this uses WB as country code style, not iso3c
       origin = "wb", 
       destination = "country.name")) %>%
     filter(!is.na(country_standard)) %>%
@@ -341,34 +397,6 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     select(country_standard, gini_2020)  
 
 ########################################      
-    
-## Africa Integrity Indicators ##
-  
-  import_africa_integrity <- read_excel("data/Africa_Integrity_Indictors_CLEAN_22021.xlsx", na = "n/a")
-  
-  df_africa_int <- import_africa_integrity %>%
-    select(-ID) %>%
-    clean_names() %>%
-    mutate(
-      country = ifelse(
-        country == "sundan",
-        "sudan",
-        country),
-      iso_code = countrycode(country, origin = 'country.name', destination = 'iso3c'),
-      country_standard = countrycode(
-        iso_code, 
-        origin = "iso3c", 
-        destination = "country.name"
-        )) %>%
-    # Adding "afr_int" prefix to column names
-    rename_with( 
-    ~ paste("afr_int", .x, sep = "_"), 
-    in_law_the_independence_of_the_judiciary_is_guaranteed:
-      in_practice_there_is_a_death_registration_system_and_citizens_can_obtain_certificates_for_deceased_family_members) %>%
-    filter(!is.na(year)) %>%
-    select(country_standard, everything(), -country)
-
-########################################      
   
 ### Merging datasets ###
   df_all <- df_covid_owid %>%
@@ -381,7 +409,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     full_join(df_percap_health_expend, by = c("country_standard", "year")) %>%
     full_join(df_gdp, by = c("country_standard", "year")) %>%
     full_join(df_gini, by = "country_standard") %>%
-    full_join(df_africa_int, by = c("country_standard", "year")) %>%
+    #full_join(df_africa_int, by = c("country_standard", "year")) %>%
     select(
       country_standard, 
       year, 
@@ -390,7 +418,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       gdp_per_capita,
       eiu_overall_score:eiu_regime_type,
       ogp_participating:ogp_average_score,
-      who_pub_health_exp_percent_gdp,
+      pub_health_exp_percent_gdp,
       everything()) %>%
     mutate(post_covid = 
              ifelse(year >= 2020,
@@ -406,9 +434,57 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   # Limiting to the year 2006 and later
   df_all <- df_all %>% filter(year >= 2006)
 
-# Exporting dataset
+  # Exporting df_all
   write_csv(df_all, "data/merged_data.csv")
+  
+  ## By year instead of date ##
+  df_all_yr <- df_covid_owid_yr %>%
+    full_join(df_eiu, by = c("country_standard", "year")) %>%
+    full_join(df_ogp, by = "country_standard") %>%  
+    full_join(df_wgi, by = c("country_standard", "year")) %>%  
+    full_join(df_vdem, by = c("country_standard", "year")) %>%    
+    full_join(df_fh, by = c("country_standard", "year")) %>%       
+    full_join(df_gdp_health_expend, by = c("country_standard", "year")) %>%
+    full_join(df_percap_health_expend, by = c("country_standard", "year")) %>%
+    full_join(df_gdp, by = c("country_standard", "year")) %>%
+    full_join(df_gini, by = "country_standard") %>%
+    full_join(df_africa_int, by = c("country_standard", "year")) %>%
+    select(
+      country_standard, 
+      year, 
+      median_age:aged_65_older,
+      gdp_per_capita,
+      eiu_overall_score:eiu_regime_type,
+      ogp_participating:ogp_average_score,
+      pub_health_exp_percent_gdp,
+      everything()) %>%
+    mutate(post_covid = 
+             ifelse(year >= 2020,
+                    TRUE,
+                    FALSE))
+  
+    # Limiting to the year 2006 and later
+          # Some data (including WGI and Gini index) go back further
+    df_all_yr <- df_all_yr %>% filter(year >= 2006)
+  
+    # Exporting df_all_yr
+    write_csv(df_all_yr, "data/merged_data_yr.csv")
+  
 ```
+
+Reviewing the data
+
+A helpful link for issues: https://github.com/ropensci/skimr/issues/606
+
+```{r}
+skim_all <- skim(df_all)
+skim_all_yr <- skim(df_all_yr)
+
+skim_all
+
+skim_yr
+```
+
 
 
 You can do python code, like in example chunk below.
