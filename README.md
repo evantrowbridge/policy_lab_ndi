@@ -7,11 +7,10 @@ GitHub for Sharing NDI Code
 -   merged_data.csv
 
     -   A file that merges variables of interest from the data sets below.
-    -   This file is large and stored on Google Drive instead of GitHub
-
+    -   This file is large
 -   merged_data_yr.csv
 
-    -   Same as me
+    -   Same as merged_data.csv but each row represents a year instead of an individual date
 
 -   owid-covid-data.csv
 
