@@ -7,7 +7,11 @@ GitHub for Sharing NDI Code
 -   merged_data.csv
 
     -   A file that merges variables of interest from the data sets below.
-    -   This file is large and stored on Google Drive instead of GitHub
+    -   This file is large
+
+-   merged_data_yr.csv
+
+    -   Same as merged_data.csv but each row represents a year instead of an individual date
 
 -   owid-covid-data.csv
 
@@ -21,6 +25,8 @@ GitHub for Sharing NDI Code
 
 -   public-health-expenditure-share-GDP-OWID.csv
 
+    -   Public expenditure on health as a percent of GDP.
+    -   Only covers years 2006 - 2014
     -   This comes from [Our World in Data](https://ourworldindata.org/grapher/public-health-expenditure-share-gdp-owid), using data from the WHO
 
 -   OGP_data.xlsx
@@ -40,27 +46,32 @@ GitHub for Sharing NDI Code
 -   Africa_Integrity_Indictors_CLEAN_22021.xlsx
 
     -   Africa Integrity Indicators
-        -   https://www.africaintegrityindicators.org/data
+
+        -   <https://www.africaintegrityindicators.org/data>
+
     -   Key Variables
-        - Transparency
-            - In practice,citizenscanaccessthe results and documents associated with procurement contracts (full contract, proposals, execution reports, financial audits, etc.).
-            - In law,citizens have a right to request public information from state bodies.
-            - In practice, citizen requests for public information are effective.
-            - In practice, citizens can access legislative processes and documents.
-            - In law, senior officials of the three branches of government (including heads of state and government, ministers, members of Parliament, judges, etc.) are required to disclose records of their assets and disclosures are public.
-            - In law, political parties are required to regularly disclose private donations.
-            - 
-        - Corruption:
-            - In law, corruption is criminalized as a specific offense.
-            - In practice, the body/bodies that investigate/s allegations of public sector corruption is/are effective.
-            - In law, civil servants who report cases of corruption are protected from recrimination or other negative consequences.
-            - In law, there is an independent body/bodies mandated to receive and investigate cases of alleged public sector corruption.
-    
+
+        -   Transparency
+
+            -   In practice,citizenscanaccessthe results and documents associated with procurement contracts (full contract, proposals, execution reports, financial audits, etc.).
+            -   In law,citizens have a right to request public information from state bodies.
+            -   In practice, citizen requests for public information are effective.
+            -   In practice, citizens can access legislative processes and documents.
+            -   In law, senior officials of the three branches of government (including heads of state and government, ministers, members of Parliament, judges, etc.) are required to disclose records of their assets and disclosures are public.
+            -   In law, political parties are required to regularly disclose private donations.
+            -   
+
+        -   Corruption:
+
+            -   In law, corruption is criminalized as a specific offense.
+            -   In practice, the body/bodies that investigate/s allegations of public sector corruption is/are effective.
+            -   In law, civil servants who report cases of corruption are protected from recrimination or other negative consequences.
+            -   In law, there is an independent body/bodies mandated to receive and investigate cases of alleged public sector corruption.
 
 -   WB_Public_Health_Expenditure_v2.csv
 
-    - World Health Organization Global Health Expenditure Database
-    - https://data.worldbank.org/indicator/SH.XPD.GHED.PC.CD
+    -   World Health Organization Global Health Expenditure Database
+    -   <https://data.worldbank.org/indicator/SH.XPD.GHED.PC.CD>
 
 -   Worldwide_Governance_Indicators_clean.csv
 
