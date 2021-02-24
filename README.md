@@ -77,3 +77,7 @@ GitHub for Sharing NDI Code
 -   Freedom_house.xlsx
 
     -   Nikunj, can you add info (the source and a link)?
+    
+- Vdem_effective.csv
+    - "Government Effectiveness" combines into a single grouping responses on the quality of public service provision, the quality of the bureaucracy, the competence of civil servants, the independence of the civil service from political pressures, and the credibility of the government’s commitment to policies. The main focus of this index is on "inputs" required for the government to be able to produce and implement good policies and deliver public goods.
+    - Years:1995-2018
