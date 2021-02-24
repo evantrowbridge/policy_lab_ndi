@@ -37,6 +37,10 @@ GitHub for Sharing NDI Code
 
     -   Katia, can you add info (the source and a link)?
 
+-   CPI_Transparency_International.xlsx
+
+    -   Katia, can you add info (the source and a link)?
+
 -   Gini_coefficient_2020.csv
 
     -   Gives each country's Gini index for the year 2020
@@ -78,6 +82,12 @@ GitHub for Sharing NDI Code
     -   This comes from the [Worldwide_Governance_Indicators](https://info.worldbank.org/governance/wgi/).
     -   We merge data of two indicators (Voice and Accountability and Control of Corruption) into a single data set.
 
+-   wgi_gov_effective.xlsx
+
+    -   This comes from the [Worldwide_Governance_Indicators](https://info.worldbank.org/governance/wgi/).
+
+    -   It includes the Government Effectiveness index scores
+
 -   vdem_clean.csv
 
     -   This comes from the [V-Dem Dataset - Version 10](https://www.v-dem.net/en/data/data/v-dem-dataset/).
@@ -88,7 +98,8 @@ GitHub for Sharing NDI Code
 -   Freedom_house.xlsx
 
     -   Nikunj, can you add info (the source and a link)?
-    
-- Vdem_effective.csv
-    - "Government Effectiveness" combines into a single grouping responses on the quality of public service provision, the quality of the bureaucracy, the competence of civil servants, the independence of the civil service from political pressures, and the credibility of the government’s commitment to policies. The main focus of this index is on "inputs" required for the government to be able to produce and implement good policies and deliver public goods.
-    - Years:1995-2018
+
+-   Vdem_effective.csv
+
+    -   "Government Effectiveness" combines into a single grouping responses on the quality of public service provision, the quality of the bureaucracy, the competence of civil servants, the independence of the civil service from political pressures, and the credibility of the government's commitment to policies. The main focus of this index is on "inputs" required for the government to be able to produce and implement good policies and deliver public goods.
+    -   Years:1995-2018

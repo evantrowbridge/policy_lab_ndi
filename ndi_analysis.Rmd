@@ -183,6 +183,21 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     select(country_standard, year, eiu_overall_score:eiu_regime_type, -eiu_rank, -eiu_rank_change)
 
 ########################################    
+  
+## Transparency International Corruption Perception Index
+  
+  import_CPI_Transparency_International <- read_excel("data/CPI_Transparency_International.xlsx")
+  
+  df_cpi <- import_CPI_Transparency_International %>%
+    clean_names() %>%
+    mutate(
+      country_standard = countrycode(
+        country_code,
+        origin = "iso3c",
+        destination = "country.name")) %>%
+    select(country_standard, year, cpi_score)
+  
+########################################     
       
 ## Data from Open Government Partnership ##
   
@@ -209,6 +224,8 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   
 ## WGI indicators ##
   
+  # Voice & Accountability and Control of Corruption
+  
   import_Worldwide_Governance_Indicators_clean <- read_csv("data/Worldwide_Governance_Indicators_clean.csv")
   
   df_wgi <- import_Worldwide_Governance_Indicators_clean %>%
@@ -233,7 +250,26 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       ~ paste("wgi", .x, sep = "_"),
       voice_and_accountability:control_of_corruption) %>%
     select(country_standard, year, everything(), -x1, -country, -iso_code)
+
+  # Government Effectiveness
+  import_wgi_gov_effective <- read_excel("data/wgi_gov_effective.xlsx", na = "NA")
   
+  df_wgi_effect <- import_wgi_gov_effective %>%
+    clean_names() %>%
+    mutate(
+      country_standard = countrycode(
+        code,
+        origin = "iso3c",
+        destination = "country.name")) %>%
+    filter(!is.na(country_standard)) %>%
+    select(country_standard, everything(), -country_territory, -code) %>%
+    pivot_longer(!country_standard, names_to = "year", values_to = "wgi_govt_effective") %>%
+    mutate(
+      year = as.numeric(
+        str_remove(year, "x"))) %>%
+    arrange(country_standard, year)
+    
+    
 ########################################    
   
 ## V-Dem indicators ##
@@ -458,8 +494,10 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   ## By year instead of date ##
   df_all_yr <- df_covid_owid_yr %>%
     full_join(df_eiu, by = c("country_standard", "year")) %>%
+    full_join(df_cpi, by = c("country_standard", "year")) %>%
     full_join(df_ogp, by = "country_standard") %>%  
     full_join(df_wgi, by = c("country_standard", "year")) %>%  
+    full_join(df_wgi_effect, by = c("country_standard", "year")) %>%
     full_join(df_vdem, by = c("country_standard", "year")) %>%    
     full_join(df_fh, by = c("country_standard", "year")) %>%       
     full_join(df_gdp_health_expend, by = c("country_standard", "year")) %>%
@@ -509,20 +547,20 @@ skim_all_yr_2020 <- skim(df_all_yr_2020)
 
 # All Data (individual dates)
 
-```{r}
+```{r echo=TRUE}
 skim_all
 ```
 
 
 # All Data (annual)
 
-```{r}
+```{r echo=TRUE}
 skim_all_yr
 ```
 
 # All Data (2020 only)
 
-```{r}
+```{r echo=TRUE}
 skim_all_yr_2020
 ```
 
