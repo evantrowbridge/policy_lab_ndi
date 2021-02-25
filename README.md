@@ -31,21 +31,21 @@ GitHub for Sharing NDI Code
 
 -   OGP_data.xlsx
 
-    -   Katia, can you add info (the source and a link)?
+    -   add info (the source and a link)?
 
 -   GDP_data.xlsx
 
-    -   Katia, can you add info (the source and a link)?
+    -   add info (the source and a link)?
 
 -   CPI_Transparency_International.xlsx
 
-    -   Katia, can you add info (the source and a link)?
+    -   add info (the source and a link)?
 
 -   Gini_coefficient_2020.csv
 
     -   Gives each country's Gini index for the year 2020
 
-    -   Aishwarya, can you add info (the source and a link)?
+    -   add info (the source and a link)?
 
 -   Africa_Integrity_Indictors_CLEAN_22021.xlsx
 
@@ -95,11 +95,20 @@ GitHub for Sharing NDI Code
     -   We downloaded "Country-Year: V-Dem Core" data and merged three indicators (v2x_libdem: Liberal democracy index), v2x_partipdem: Participatory democracy index, v2x_cspart: Civil society participation index)
     -   This data goes back many years. We include data starting in 2006
 
+-   PanDem_ts_V5.csv
+
+    -   This data comes from V-Dem's ["Pandemic Backsliding" project](https://www.v-dem.net/en/our-work/research-projects/pandemic-backsliding/)
+
+    -   The data was downloaded from [V-Dem's GitHub page](https://github.com/vdeminstitute/pandem)
+
 -   Freedom_house.xlsx
 
-    -   Nikunj, can you add info (the source and a link)?
+    -   add info (the source and a link)?
 
--   Vdem_effective.csv
+-   wgi_gov_effective.xlsx
 
     -   "Government Effectiveness" combines into a single grouping responses on the quality of public service provision, the quality of the bureaucracy, the competence of civil servants, the independence of the civil service from political pressures, and the credibility of the government's commitment to policies. The main focus of this index is on "inputs" required for the government to be able to produce and implement good policies and deliver public goods.
     -   Years:1995-2018
+    -   This comes from the [World Bank's Worldwide Governance Indicators (WGI)](http://info.worldbank.org/governance/wgi/).
+
+-   
