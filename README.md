@@ -31,11 +31,13 @@ GitHub for Sharing NDI Code
 
 -   OGP_data.xlsx
 
-    -   add info (the source and a link)?
+    -   Open Government Partnership Report data (2019)
+        https://docs.google.com/spreadsheets/d/10NlwZZSGaJnRRZf0OD5ZsAmjYFDAhhUxXd88fMi32qY/edit#gid=261093125
 
 -   GDP_data.xlsx
 
-    -   add info (the source and a link)?
+        World Bank GDP data
+        https://data.worldbank.org/indicator/NY.GDP.MKTP.CD
 
 -   CPI_Transparency_International.xlsx
 
