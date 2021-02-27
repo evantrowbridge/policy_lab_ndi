@@ -36,7 +36,7 @@ GitHub for Sharing NDI Code
 
 -   GDP_data.xlsx
 
-        World Bank GDP data
+    - World Bank Data
         https://data.worldbank.org/indicator/NY.GDP.MKTP.CD
 
 -   CPI_Transparency_International.xlsx
