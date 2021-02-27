@@ -201,24 +201,39 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       
 ## Data from Open Government Partnership ##
   
-  import_OGP_data <- read_excel("data/OGP_data.xlsx")
+  import_OGP_data <- read_excel("data/OGP_data.xlsx", 
+                                col_types = c(
+                                  "text", "numeric", "numeric", "numeric"))
   
   df_ogp <- import_OGP_data %>%
     clean_names() %>%
-    filter(!country_code %in% c(
-      'ARBA', 'BRSP', 'CAON', 'CONR', 'ESMD', 'ESPV', 'FRPA', 'GBSC', 'GETB', 
-      'GHST', 'IDBO', 'KEEM', 'KRSE', 'MXJL', 'NGKD', 'PELL', 'PHSC', 'ROIS', 
-      'TZKG', 'USAU')) %>%    
+    rename(ogp_2019_considerations_transparency = ogp_considerations_transparency) %>%
     mutate(
       country_standard = countrycode(
         country_code,
         origin = "iso3c",
-        destination = "country.name")) %>%
-    # Adding "ogp" prefix to column names
-    rename_with( 
-    ~ paste("ogp", .x, sep = "_"), 
-    c(date_joined, current_action_plan, open_budget_survey_transparency_score)) %>%
-    select(country_standard, everything())
+        destination = "country.name"),
+      ogp_2019_considerations_text = case_when(
+        ogp_2019_considerations_transparency == 1 ~ "Consider Action",
+        ogp_2019_considerations_transparency == 2 ~ "Implement for Results",
+        ogp_2019_considerations_transparency == 3 ~ "Share Innovation",
+        TRUE ~ NA_character_
+        )
+      ) %>%
+    select(country_standard, everything(), -country_code)  
+  
+  # Merging with large list of countries in previously saved merged_data_yr 
+  # and assigning "zero" values to the ogp_participating variable for countries
+  # not included in the imported OGP dataset
+  df_ogp <- read_csv("data/merged_data_yr.csv") %>%
+    select(country_standard, year) %>%
+    distinct() %>%
+    full_join(df_ogp, by = c("country_standard", "year")) %>%
+    mutate(ogp_participating = ifelse(
+      is.na(ogp_participating),
+      0,
+      ogp_participating
+    ))
 
 ########################################    
   
@@ -467,7 +482,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   df_all <- df_covid_owid %>%
     full_join(df_eiu, by = c("country_standard", "year")) %>%
     full_join(df_cpi, by = c("country_standard", "year")) %>%
-    full_join(df_ogp, by = "country_standard") %>%  
+    full_join(df_ogp, by = c("country_standard", "year")) %>%  
     full_join(df_wgi, by = c("country_standard", "year")) %>% 
     full_join(df_wgi_effect, by = c("country_standard", "year")) %>%
     full_join(df_vdem, by = c("country_standard", "year")) %>% 
@@ -485,7 +500,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       median_age:aged_65_older,
       gdp_per_capita,
       eiu_overall_score:eiu_regime_type,
-      ogp_participating:ogp_average_score,
+      ogp_2019_considerations_transparency:ogp_2019_considerations_text,
       pub_health_exp_percent_gdp,
       everything(),
       -name_country_standard,
@@ -514,8 +529,8 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   df_all_yr <- df_covid_owid_yr %>%
     full_join(df_eiu, by = c("country_standard", "year")) %>%
     full_join(df_cpi, by = c("country_standard", "year")) %>%
-    full_join(df_ogp, by = "country_standard") %>%  
-    full_join(df_wgi, by = c("country_standard", "year")) %>% 
+    full_join(df_ogp, by = c("country_standard", "year")) %>%  
+    full_join(df_wgi, by = c("country_standard", "year"))  %>% 
     full_join(df_wgi_effect, by = c("country_standard", "year")) %>%
     full_join(df_vdem, by = c("country_standard", "year")) %>% 
     full_join(df_pandem, by = "country_standard") %>%      
@@ -531,7 +546,7 @@ year_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       median_age:aged_65_older,
       gdp_per_capita,
       eiu_overall_score:eiu_regime_type,
-      ogp_participating:ogp_average_score,
+      ogp_2019_considerations_transparency:ogp_2019_considerations_text,
       pub_health_exp_percent_gdp,
       everything(),
       -code.x,

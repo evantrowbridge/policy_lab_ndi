@@ -4,6 +4,8 @@ GitHub for Sharing NDI Code
 
 ## Notes on Data:
 
+The files listed below are located in the Data folder
+
 -   merged_data.csv
 
     -   A file that merges variables of interest from the data sets below.
@@ -31,13 +33,11 @@ GitHub for Sharing NDI Code
 
 -   OGP_data.xlsx
 
-    -   Open Government Partnership Report data (2019)
-        https://docs.google.com/spreadsheets/d/10NlwZZSGaJnRRZf0OD5ZsAmjYFDAhhUxXd88fMi32qY/edit#gid=261093125
+    -   Open Government Partnership Report data (2019) <https://docs.google.com/spreadsheets/d/10NlwZZSGaJnRRZf0OD5ZsAmjYFDAhhUxXd88fMi32qY/edit#gid=261093125>
 
 -   GDP_data.xlsx
 
-    - World Bank Data
-        https://data.worldbank.org/indicator/NY.GDP.MKTP.CD
+    -   World Bank Data <https://data.worldbank.org/indicator/NY.GDP.MKTP.CD>
 
 -   CPI_Transparency_International.xlsx
 
