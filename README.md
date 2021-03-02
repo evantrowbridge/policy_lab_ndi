@@ -74,7 +74,7 @@ The files listed below are located in the Data folder
             -   In law, civil servants who report cases of corruption are protected from recrimination or other negative consequences.
             -   In law, there is an independent body/bodies mandated to receive and investigate cases of alleged public sector corruption.
 
--   WB_Public_Health_Expenditure_v2.csv
+-   WB_Public_Health_Expenditure_v3.csv
 
     -   World Health Organization Global Health Expenditure Database
     -   <https://data.worldbank.org/indicator/SH.XPD.GHED.PC.CD>
@@ -112,5 +112,3 @@ The files listed below are located in the Data folder
     -   "Government Effectiveness" combines into a single grouping responses on the quality of public service provision, the quality of the bureaucracy, the competence of civil servants, the independence of the civil service from political pressures, and the credibility of the government's commitment to policies. The main focus of this index is on "inputs" required for the government to be able to produce and implement good policies and deliver public goods.
     -   Years:1995-2018
     -   This comes from the [World Bank's Worldwide Governance Indicators (WGI)](http://info.worldbank.org/governance/wgi/).
-
--   
