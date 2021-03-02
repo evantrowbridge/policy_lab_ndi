@@ -1,0 +1,265 @@
+---
+title: "Data Analysis, Week of Feb 28"
+author: "Harris Policy Lab"
+date: "3/2/2021"
+output: word_document
+---
+
+This document explains some of the progress the NDI team made on data analysis from Feb 26 - March 2.
+
+The datasets referenced in this file are on the [team GitHub](https://github.com/evantrowbridge/policy_lab_ndi).
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# This code uses dplyr functions released in February 2021, so please update dplyr if you have not done so already.
+
+# List of packages to install
+packages <- c("tidyverse", "readxl", "janitor", "reticulate", "countrycode", "Hmisc", "lubridate", "skimr", "haven", "scales")
+
+# To install the packages, uncomment the line below and run it
+#install.packages(packages)
+
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(reticulate)
+library(countrycode)
+library(Hmisc)
+library(lubridate)
+library(skimr)
+library(haven)
+library(scales)
+
+```
+
+## Controls for COVID-19 Outcomes
+
+This week, we put together a dataframe of data for each country for the chosen control variables, using the most recent data from each country:
+
+-   GDP per capita
+
+    -   Latest year in data: 2019
+
+-   Gini index
+
+    -   Latest year in data: 2020
+
+-   Median age of population
+
+    -   Latest year in data: uncertain
+
+-   Portion of population age 65 or older
+
+    -   Latest year in data: uncertain
+
+-   Public health expenditure per capita
+
+    -   Latest year in data: 2018
+
+We have discussed including "Public health expenditure as percent of GDP," but it seemed so similar to "Public health expenditure per capita" that I have it commented out in the code below. *How to think about this?*
+
+The code to produce the controls is below.
+
+```{r covid_controls, echo=TRUE, message=FALSE, warning=FALSE}
+
+df_all_yr <- read_csv("~/GitHub/policy_lab_ndi/data/merged_data_yr.csv")
+df_all_yr_2020 <- read_csv("~/GitHub/policy_lab_ndi/data/merged_data_yr_2020.csv")
+
+# Controls for COVID outcomes
+df_covid_controls <- df_all_yr %>%
+  arrange(country_standard, year) %>%
+  group_by(country_standard) %>%
+  # These variables don't have values in 2020. Filling in from most recent year
+  fill(
+    c(gdp, pub_health_exp_percent_gdp, percap_domestic_health_expenditure)) %>%
+  filter(year==2020) %>%
+  select(
+    country_standard, 
+    gdp, 
+    pub_health_exp_percent_gdp, 
+    percap_domestic_health_expenditure)
+  
+df_covid_controls <- df_all_yr_2020 %>%
+  select(
+    country_standard, gdp_per_capita, gini_2020, median_age, aged_65_older) %>%
+  full_join(df_covid_controls, by = "country_standard") %>% 
+  select(
+    country_standard, gdp, gdp_per_capita, gini_2020, 
+        # we discussed using "public health expenditure as a proportion of GDP"
+        # as an indicator, but it seemed very similar to the next indicator
+        # below, which is "public health expenditure per capita"
+    #pub_health_exp_percent_gdp, 
+    percap_domestic_health_expenditure, 
+    median_age, aged_65_older)
+
+```
+
+We visualized how the controls relate with some variables in our data involving COVID-19, corruption, democracy, and transparency using pairplots. (The pairplots were made using differently-prepared control data, but compliments our understanding of the data).
+
+*Is it an endogeneity concern that there seems to be correlation between control variables and transparency variables?*
+
+![Corruption Indicators and Controls](images/Corruption%20and%20Controls%20relation.png "Corruption and Controls")
+
+![COVID-19 Indicators and Controls](images/COVID%20and%20Controls%20relation.png)
+
+![Democracy Indicators and Controls](images/EIU%20data%20and%20Controls%20relation.png)
+
+![Transparency Indicatos and Controls](images/Transparency%20and%20Controls%20relation.png)
+
+## Creating an index for COVID-19 health factors
+
+Our COVID-19 index comes from country-level measures starting from January 1, 2020. The measures are used in the following equation:
+
+$(\frac{1}{CasesPerMillion}) (\frac{1}{DeathsPerMillion}) (TestsPerThousand)$
+
+The intuition is that countries will have a higher index score if they have fewer cases, fewer deaths, and more tests. The index is scaled from 0 (worst) to 1 (best).
+
+We decided on this index after testing it among six considered models. We regressed each index on our list of control variables and compared the F-statistic of each model. The chosen model had the second highest F-Statistic, but was chosen because a review of the country rankings of the model with the highest F-statistic revealed it to poorly reflect the reality of comparative outcomes across countries.
+
+To see the code for the process above, see [this portion of the group's GitHub](https://github.com/evantrowbridge/policy_lab_ndi/blob/main/Reference_Code/covid_index_select.r).
+
+The process for making this index can be adapted for the remaining indices our group will be creating.
+
+For countries that were missing data on COVID-19 tests, they are assigned a score of "1" on the scale of 1 (lowest performing) to 10 (highest performing) used for countries' testing rates.
+
+The code to create the index is below:
+
+```{r covid_index, echo=TRUE}
+
+df_covid_index <- df_all_yr %>%
+  select(
+    country_standard, 
+    cum_total_cases_per_million, 
+    cum_total_deaths_per_million,
+    cum_total_tests_per_thousand) %>%
+  filter(
+    if_any(
+      cum_total_cases_per_million:cum_total_deaths_per_million, 
+      ~ !is.na(.))) %>%  
+  distinct() %>%
+  mutate(
+        # Use a scale of 1 - 10 to avoid having "0" in denominator
+    stand_total_cases_per_million  = rescale(cum_total_cases_per_million, to = c(1, 10)),
+    stand_total_deaths_per_million = rescale(cum_total_deaths_per_million, to = c(1, 10)),
+    stand_total_tests_per_thousand = rescale(cum_total_tests_per_thousand, to = c(1, 10)),
+    stand_total_tests_per_thousand_no_NA = ifelse(
+      is.na(stand_total_tests_per_thousand), 
+      1, 
+      stand_total_tests_per_thousand),
+    covid_index = rescale(
+      (1/stand_total_cases_per_million) +
+      (1/stand_total_deaths_per_million) +
+      stand_total_tests_per_thousand_no_NA)
+    ) %>%
+  select(country_standard, covid_index, everything())
+
+# Reviewing distribution of the data
+histogram(df_covid_index$stand_total_cases_per_million)
+histogram(df_covid_index$stand_total_deaths_per_million)
+histogram(df_covid_index$stand_total_tests_per_thousand_no_NA)
+histogram(df_covid_index$covid_index)
+
+# RUnning a regression of control variables on COVID-19 index
+covid_index_mod_test <- df_covid_index %>% 
+  select(country_standard, covid_index) %>%
+  full_join(df_covid_controls, by = "country_standard") %>%
+  select(-country_standard)
+
+  lm(covid_index ~ ., data = covid_index_mod_test) %>% summary()
+
+```
+
+## Creating an Index for Corruption Indicators
+
+The index for corruption indicators combines Transparency International's Corruption Perception Index (CPI) and the World Bank Worldwide Governance Indicator's Control of Corruption (CoC) index.
+
+It standardizes both indicators on a scale of 0 (worse) to 1 (best).
+
+It then creates two options for indices:
+
+Option One is a sum of the two indicators:
+
+$(CPIscaled) + (CoCscaled)$
+
+Option Two is the product of the two indicators:
+
+$(CPIscaled) (CoCscaled)$
+
+```{r}
+data <- df_all_yr
+
+#transform wgi from factor to numeric
+data2 <- data
+data2$wgi_voice_and_accountability <- as.character(data$wgi_voice_and_accountability)
+data2$wgi_voice_and_accountability <- as.numeric(data2$wgi_voice_and_accountability)
+data2$wgi_control_of_corruption <- as.character(data$wgi_control_of_corruption)
+data2$wgi_control_of_corruption <- as.numeric(data2$wgi_control_of_corruption)
+class(data2$wgi_control_of_corruption)
+
+#checking each variable
+summary(data2$cpi_score)
+summary(data2$wgi_control_of_corruption)
+
+#rescaling and creating index of corruption (cpi_score: 0-100, WGI: -2.5~2.5)
+corruption_index_pre <- data2 %>%
+  mutate(data2, cpi_score_scale = data2$cpi_score/100) %>%
+  mutate(data2, wgi_coc_scale = (data2$wgi_control_of_corruption+2.5)/5) %>%
+  mutate(data2, corruption_idx_sum = ifelse(year >= 2012, cpi_score_scale + wgi_coc_scale, NA )) %>%
+  mutate(data2, corruption_idx_avg = ifelse(year >= 2012, (cpi_score_scale + wgi_coc_scale)/2, NA ))
+
+#checking rescaled variable and index
+summary(corruption_index_pre$cpi_score)
+summary(corruption_index_pre$wgi_control_of_corruption)
+summary(corruption_index_pre$cpi_score_scale)
+summary(corruption_index_pre$wgi_coc_scale)
+
+#create csv file of index
+write.csv(corruption_index_pre[c(1:2, 109:110)], "Corruption index.csv")
+
+#plotting rescaled variables
+avg_cpi_score_scale <- corruption_index_pre %>%
+  group_by(year) %>%
+  summarise(mean_cpi_scale = mean(cpi_score_scale, na.rm = TRUE))
+
+ggplot(data = avg_cpi_score_scale, aes(x=year, y =mean_cpi_scale)) +
+geom_line() + labs(title = "Average of rescaled Perceptions of corruption", y = "Average of rescaled cpi") +
+theme(plot.title = element_text(hjust = 0.5))
+
+
+avg_wgicoc_score_scale <- corruption_index_pre %>%
+  group_by(year) %>%
+  summarise(mean_wgicoc_scale = mean(wgi_coc_scale, na.rm = TRUE))
+
+ggplot(data = avg_wgicoc_score_scale, aes(x=year, y =mean_wgicoc_scale)) +
+  geom_line() + labs(title = "Average of rescaled WGI CoC", y = "Average of rescaled WGI CoC") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+ggplot(data = corruption_index_pre, aes(x= cpi_score_scale, y = wgi_coc_scale)) +
+  geom_point() + labs(title = "Perceptions of corruption and WGI CoC", x = "rescaled wgi_Coc", y = "rescaled cpi") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+#cheking index
+summary(corruption_index_pre$corruption_idx_sum)
+summary(corruption_index_pre$corruption_idx_avg)
+
+#plotting index
+avg_corruption_idx_sum <- corruption_index_pre %>%
+  group_by(year) %>%
+  summarise(mean_corruption_idx_sum = mean(corruption_idx_sum, na.rm = TRUE))
+
+ggplot(data = avg_corruption_idx_sum, aes(x=year, y =mean_corruption_idx_sum)) +
+  geom_line() + labs(title = "Average of Corruption index (sum)", y = "Average of Corruption index (sum)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+avg_corruption_idx_avg <- corruption_index_pre %>%
+  group_by(year) %>%
+  summarise(mean_corruption_idx_avg = mean(corruption_idx_avg, na.rm = TRUE))
+
+ggplot(data = avg_corruption_idx_avg, aes(x=year, y =mean_corruption_idx_avg)) +
+  geom_line() + labs(title = "Average of Corruption index (avg)", y = "Average of Corruption index (avg)") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```

@@ -2,16 +2,13 @@
 title: "ndi_analysis"
 author: "Harris Policy Lab"
 date: "2/16/2021"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-	message = FALSE,
-	warning = FALSE,
-	include = FALSE
-)
-
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 # This code uses dplyr functions released in February 2021, so please update dplyr if you have not done so already.
 
 # List of packages to install
@@ -32,7 +29,7 @@ library(haven)
 library(scales)
 ```
 
-```{r functions, message=FALSE, warning=FALSE, include=FALSE}
+```{r functions, include=FALSE}
 
 fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
 # Source: https://stackoverflow.com/questions/24519794/r-max-function-ignore-na/24520992
@@ -40,7 +37,7 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
 ```
 
 
-```{r importing_and_merging, message=FALSE, warning=FALSE, include=FALSE}
+```{r importing_and_merging, include=FALSE}
 
 ## COVID-19 data from Our World in Data ##
   import_owid_covid_data <- read_csv("data/owid-covid-data.csv", 
@@ -510,7 +507,7 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
 
 Merging datasets
 
-```{r merging_data}
+```{r merging_data, include=FALSE}
   df_all <- df_covid_owid %>%
     full_join(df_eiu, by = c("country_standard", "year")) %>%
     full_join(df_cpi, by = c("country_standard", "year")) %>%
@@ -598,12 +595,13 @@ Merging datasets
   
     # Exporting df_all_yr
     write_csv(df_all_yr, "data/merged_data_yr.csv")
+    write_csv(df_all_yr_2020, "data/merged_data_yr_2020.csv")
   
 ```
 
 When reviewing the data, a helpful link for issues: https://github.com/ropensci/skimr/issues/606
 
-```{r covid_controls}
+```{r covid_controls, echo=TRUE}
 
 # Controls for COVID outcomes
 df_covid_controls <- df_all_yr %>%
@@ -639,7 +637,7 @@ write_csv(df_covid_controls, "data/covid-19_controls.csv")
 
 # Creating an index for COVID-19 health factors
 
-In index comes from the country-level amounts since the start of the pandemic, used in the following equation: (1 / COVID-19 cases per million) * (1 / COVID-19 deaths per million) * (total COVID-19 tests per thousand)
+Our COVID-19 index comes from country-level measures starting from January 1, 2020. The measures are used in the following equation: (1 / COVID-19 cases per million) * (1 / COVID-19 deaths per million) * (total COVID-19 tests per thousand)
 
 The intuition is that countries will have a higher index score if they have fewer cases, fewer deaths, and more tests. The index is scaled from 0 (worst) to 1 (best).
 
@@ -649,7 +647,7 @@ To see the code for the process above, see reference_dode/covid_index_select.r
 
 For countries that were missing data on COVID-19 tests, they are assigned a score of "1" on the scale of 1 to 10 used for countries' testing rates.
 
-```{r covid_index}
+```{r covid_index, echo=TRUE}
 df_covid_index <- df_all_yr %>%
   select(
     country_standard, 
