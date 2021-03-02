@@ -174,7 +174,7 @@ covid_index_mod_test <- df_covid_index %>%
 
 The index for corruption indicators combines Transparency International's Corruption Perception Index (CPI) and the World Bank Worldwide Governance Indicator's Control of Corruption (CoC) index.
 
-It standardizes both indicators on a scale of 0 (worse) to 1 (best).
+It standardizes both indicators on a scale of 0 (worst) to 1 (best).
 
 It then creates two options for indices:
 
@@ -182,9 +182,9 @@ Option One is a sum of the two indicators:
 
 $(CPIscaled) + (CoCscaled)$
 
-Option Two is the product of the two indicators:
+Option Two is the average of the two indicators:
 
-$(CPIscaled) (CoCscaled)$
+$\frac{(CPIscaled) + (CoCscaled)}{2}$
 
 ```{r}
 data <- df_all_yr
