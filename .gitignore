@@ -7,6 +7,7 @@
 
 # User-specific files
 .Ruserdata
+data/WVS_TimeSeries_R_v1_6.rds
 #data/merged_data.csv
 
 # Example code in package build process

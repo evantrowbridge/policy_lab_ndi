@@ -112,3 +112,5 @@ The files listed below are located in the Data folder
     -   "Government Effectiveness" combines into a single grouping responses on the quality of public service provision, the quality of the bureaucracy, the competence of civil servants, the independence of the civil service from political pressures, and the credibility of the government's commitment to policies. The main focus of this index is on "inputs" required for the government to be able to produce and implement good policies and deliver public goods.
     -   Years:1995-2018
     -   This comes from the [World Bank's Worldwide Governance Indicators (WGI)](http://info.worldbank.org/governance/wgi/).
+
+-   WVS_TimeSeries_R\_v1_6.rds
