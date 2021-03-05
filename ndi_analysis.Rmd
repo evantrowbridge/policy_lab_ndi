@@ -748,7 +748,8 @@ df_covid_index <- df_all_yr %>%
   filter(
     if_any(
       cum_total_cases_per_million:cum_total_deaths_per_million, 
-      ~ !is.na(.))) %>%  
+      ~ !is.na(.))) %>%
+  filter(!is.na(country_standard)) %>%  
   distinct() %>%
   mutate(
         # Use a scale of 1 - 10 to avoid having "0" in denominator
@@ -790,50 +791,102 @@ write_csv(df_covid_index, "data/covid-19_index.csv")
 ```{r}
 # Since Freedom House data only goes back to 2012, 
 #   the index only goes back to 2012
-#   Also, the most recent data in the index is from 2019, but to make it
-#   easier to run regressions with COVID-19 data, we copy the 2019 data in
-#   the years 2020 and 2021.
 
 df_transparency_indicators <- df_all_yr %>%
   select(
     country_standard,
     year,
     fh_global_freedom_score,
-    wgi_voice_and_accountability,
+    wgi_voice_and_accountability
+  ) 
+
+df_transparency_index <- df_transparency_indicators %>%
+  filter(!is.na(country_standard)) %>%  
+  distinct() %>%
+  mutate(
+    non_na_sum = rowSums(!is.na(across(fh_global_freedom_score:wgi_voice_and_accountability))),
+    across(
+      fh_global_freedom_score:wgi_voice_and_accountability,
+      ~rescale(.)),
+    numerator = rowSums(across(fh_global_freedom_score:wgi_voice_and_accountability), na.rm=TRUE),
+    transparency_index = rescale(numerator / non_na_sum),
+    incomplete_trans_index = if_else(
+      non_na_sum < max(non_na_sum),
+      TRUE,
+      FALSE
+    )) %>%
+  select(country_standard, year, transparency_index, everything()) %>%
+  arrange(country_standard, year) %>%
+  filter(year >= 2012 & year <= 2019)
+
+skim(df_transparency_index)
+histogram(df_transparency_index$transparency_index)
+```
+# Budget transparency index
+
+```{r}
+# I assign "0" to NA values (assuming that means countries not participating)
+
+df_budget_transparency_index <- df_all_yr %>%
+  select(
+    country_standard,
+    year,
+    ogp_transparency_fisc_open) %>%
+  filter(!is.na(country_standard)) %>%
+  distinct() %>%
+  mutate(
+    ogp_transparency_fisc_open = ifelse(
+      is.na(ogp_transparency_fisc_open),
+      0,
+      ogp_transparency_fisc_open),
+    incomplete_bdgt_trans_index = if_else(
+      ogp_transparency_fisc_open==0,
+      TRUE,
+      FALSE),
+    budget_transparency_index = rescale(ogp_transparency_fisc_open)) %>%
+  select(country_standard, year, budget_transparency_index, everything()) %>%
+  arrange(country_standard, year)
+
+skim(df_budget_transparency_index)
+histogram(df_budget_transparency_index$budget_transparency_index)
+```
+
+# Accountability Index
+
+```{r}
+
+#   The most recent data in the index is from 2019, but to make it
+
+df_accountability_indicators <- df_all_yr %>%
+  select(
+    country_standard,
+    year,
     vdem_diagonal_account,
     vdem_vertical_account,
     vdem_horizontal_account
   ) 
 
-df_transparency_index <- df_transparency_indicators %>%
+df_accountability_index <- df_accountability_indicators %>%
+  filter(!is.na(country_standard)) %>%  
   distinct() %>%
   mutate(
+    non_na_sum = rowSums(!is.na(across(vdem_diagonal_account:vdem_horizontal_account))),
     across(
-      fh_global_freedom_score:vdem_horizontal_account,
-      ~rescale(., to = c(1,10))),
-  transparency_index = rescale(
-    fh_global_freedom_score +
-    wgi_voice_and_accountability +
-    vdem_diagonal_account +
-    vdem_vertical_account +
-    vdem_horizontal_account)
-  ) %>%
-  select(country_standard, year, transparency_index, everything()) %>%
-  arrange(country_standard, year) %>%
-  group_by(country_standard) %>%
-  # Using 2019 index values for 2020 and 2021
-  mutate(
-    transparency_index = case_when(
-      year == 2020 ~lag(transparency_index),
-      year == 2021 ~lag(transparency_index, n = 2),
-      TRUE~transparency_index
-    )
-  ) %>%
-  ungroup()
+      vdem_diagonal_account:vdem_horizontal_account,
+      ~rescale(.)),
+    numerator = rowSums(across(vdem_diagonal_account:vdem_horizontal_account), na.rm=TRUE),
+    accountability_index = rescale(numerator / non_na_sum),
+    incomplete_acnt_index = if_else(
+      non_na_sum < max(non_na_sum),
+      TRUE,
+      FALSE)) %>%
+  select(country_standard, year, accountability_index, everything()) %>%
+  arrange(country_standard, year)
 
-skim(df_transparency_index)
-histogram(df_transparency_index$transparency_index)
+skim(df_accountability_index)
+histogram(df_accountability_index$accountability_index)
 ```
+
 
 # Trust index
 
@@ -841,7 +894,11 @@ histogram(df_transparency_index$transparency_index)
 # What should we do about the many missing WVS values?
 #   Many of the wvs_trust_values are missing
 #   The current index only includes 83 countries
-#   This index also uses "fill" between missing dates
+#   This index has code to use "fill" between missing dates. 
+# Q: Should we use fill?
+
+# NDI seemed interested in "Democratic Political Culture" (This seems to have more to do with the perception of democracy and not trust of government)
+#   Leaving out for now
 
 #### Looking at countries, results are not what I'd expect....
 
@@ -849,39 +906,28 @@ df_trust_indicators <- df_all_yr %>%
   select(
     country_standard,
     year,
-    eiu_electoral,
     wvs_trust_parliament,
+    #eiu_pol_culture,
     wvs_trust_gov,
     wvs_trust_court,
     wvs_trust_elect)
 
 df_trust_index <- df_trust_indicators %>%
+  filter(!is.na(country_standard)) %>%  
   distinct() %>%
   mutate(
+    non_na_sum = rowSums(!is.na(across(wvs_trust_parliament:wvs_trust_elect))),
     across(
-      eiu_electoral:wvs_trust_elect,
-      ~rescale(., to = c(1,10))),
-    trust_index_no_elec = rescale(
-      eiu_electoral +
-      wvs_trust_parliament +
-      wvs_trust_gov +
-      wvs_trust_court),
-    trust_index = rescale(
-      eiu_electoral +
-      wvs_trust_parliament +
-      wvs_trust_gov +
-      wvs_trust_court + 
-      wvs_trust_elect),
-    trust_index = ifelse(
-      is.na(trust_index),
-            trust_index_no_elec,
-            trust_index)
-    ) %>%
+      wvs_trust_parliament:wvs_trust_elect,
+      ~rescale(.)),
+    numerator = rowSums(across(wvs_trust_parliament:wvs_trust_elect), na.rm=TRUE),
+    trust_index = rescale(numerator / non_na_sum),
+    incomplete_trust_index = if_else(
+      non_na_sum < max(non_na_sum),
+      TRUE,
+      FALSE)) %>%    
   select(country_standard, year, trust_index, everything()) %>%
-  arrange(country_standard, year) %>%
-  group_by(country_standard) %>%
-  fill(trust_index) %>%
-  ungroup()
+  arrange(country_standard, year)
 
 countries_in_trust_index <- df_trust_index %>% filter(!is.na(trust_index)) %>% select(country_standard, year) %>% distinct() %>% tibble()
 
@@ -893,44 +939,35 @@ histogram(df_trust_index$trust_index)
 
 ```{r}
 
+# We have option to include WVS corruption indicator, but it is not very comprehensive
+
 # CPI score only starts in 2012
+df_corruption_indicators <- df_all_yr %>%
+  select(
+    country_standard,
+    year,
+    wgi_control_of_corruption,
+    #wvs_corruption,
+    cpi_score) %>%
+  arrange(country_standard, year)
 
-#transform wgi from factor to numeric
-df_corruption_indicators <- df_all_yr
-df_corruption_indicators$wgi_control_of_corruption <- as.character(df_corruption_indicators$wgi_control_of_corruption)
-df_corruption_indicators$wgi_control_of_corruption <- as.numeric(df_corruption_indicators$wgi_control_of_corruption)
-
-#rescaling and creating index of corruption (cpi_score: 0-100, WGI: -2.5~2.5)
-corruption_index_pre <- df_corruption_indicators %>%
-  mutate(wvs_corruption_scale = rescale(wvs_corruption)) %>% # Evan added this line and modified lines below
-  mutate(df_corruption_indicators, cpi_score_scale = df_corruption_indicators$cpi_score/100) %>%
-  mutate(df_corruption_indicators, wgi_coc_scale = (df_corruption_indicators$wgi_control_of_corruption+2.5)/5) %>%
-  mutate(df_corruption_indicators, corruption_idx_sum = ifelse(year >= 2012, cpi_score_scale + wgi_coc_scale + wvs_corruption_scale, NA )) %>%
-  mutate(df_corruption_indicators, corruption_idx_sum_no_wvs = ifelse(year >= 2012, cpi_score_scale + wgi_coc_scale, NA )) %>%
-  mutate(corruption_index = ifelse(
-      is.na(corruption_idx_sum),
-            corruption_idx_sum_no_wvs,
-            corruption_idx_sum)) %>%
-  mutate(df_corruption_indicators, corruption_idx_avg = ifelse(year >= 2012, (cpi_score_scale + wgi_coc_scale)/2, NA ))
-
-#   Also, the most recent data in the index is from 2019, but to make it
-#   easier to run regressions with COVID-19 data, we copy the 2019 data in
-#   the years 2020 and 2021.
-
-df_corruption_index <- corruption_index_pre %>%
-  select(country_standard, year, corruption_index, cpi_score_scale, wgi_coc_scale, wvs_corruption_scale) %>%
-  arrange(country_standard, year) %>%
+df_corruption_index <- df_corruption_indicators %>%
+  filter(!is.na(country_standard)) %>%  
   distinct() %>%
-  group_by(country_standard) %>%
-  # Using 2019 index values for 2020 and 2021
   mutate(
-    corruption_index = case_when(
-      year == 2020 ~lag(corruption_index),
-      year == 2021 ~lag(corruption_index, n = 2),
-      TRUE~corruption_index
-    )
-  ) %>%
-  ungroup()
+    non_na_sum = rowSums(!is.na(across(wgi_control_of_corruption:cpi_score))),
+    across(
+      wgi_control_of_corruption:cpi_score,
+      ~rescale(.)),
+    numerator = rowSums(across(wgi_control_of_corruption:cpi_score), na.rm=TRUE),
+    corruption_index = rescale(-(numerator / non_na_sum)),
+    incomplete_corrupt_index = if_else(
+      non_na_sum < max(non_na_sum),
+      TRUE,
+      FALSE)) %>%    
+  select(country_standard, year, corruption_index, everything()) %>%
+  arrange(country_standard, year) %>%
+  filter(year <= 2019)
 
 skim(df_corruption_index)
 histogram(df_corruption_index$corruption_index)
@@ -948,22 +985,28 @@ df_effectiveness_indicators <- df_all_yr %>%
     eiu_gov_func)
 
 df_effectiveness_index <- df_effectiveness_indicators %>%
-  arrange(country_standard, year) %>%
-  mutate(
-    wgi_govt_effective = ifelse(
-      year==2020,
-      lag(wgi_govt_effective),
-      wgi_govt_effective)) %>%
+  filter(!is.na(country_standard)) %>%  
   distinct() %>%
-  ungroup() %>%
+  #arrange(country_standard, year) %>%
+  # mutate(
+  #   wgi_govt_effective = ifelse(
+  #     year==2020,
+  #     lag(wgi_govt_effective),
+  #     wgi_govt_effective)) %>%
   mutate(
+    non_na_sum = rowSums(!is.na(across(wgi_govt_effective:eiu_gov_func))),
     across(
       wgi_govt_effective:eiu_gov_func,
-      ~rescale(., to = c(1,10))),
-    effectiveness_index = rescale(
-      wgi_govt_effective +
-      eiu_gov_func)) %>%
-  select(country_standard, year, effectiveness_index, everything())
+      ~rescale(.)),
+    numerator = rowSums(across(wgi_govt_effective:eiu_gov_func), na.rm=TRUE),
+    effectiveness_index = rescale(numerator / non_na_sum),
+    incomplete_effect_index = if_else(
+      non_na_sum < max(non_na_sum),
+      TRUE,
+      FALSE)) %>%
+  select(country_standard, year, effectiveness_index, everything()) %>%
+  arrange(country_standard, year) %>%
+  filter(year <= 2019)
 
 skim(df_effectiveness_index)
 histogram(df_effectiveness_index$effectiveness_index)
@@ -979,19 +1022,21 @@ df_budget_particpation_index <- df_all_yr %>%
   select(
     country_standard,
     year,
-    ogp_participation_fisc_open
-  ) %>%
+    ogp_participation_fisc_open) %>%
+  filter(!is.na(country_standard)) %>%
+  distinct() %>%
   mutate(
     ogp_participation_fisc_open = ifelse(
       is.na(ogp_participation_fisc_open),
       0,
-      ogp_participation_fisc_open
-  )) %>%
-  arrange(country_standard, year) %>%
-  distinct() %>%
-  mutate(
+      ogp_participation_fisc_open),
+    incomplete_bdgt_part_index = if_else(
+      ogp_participation_fisc_open==0,
+      TRUE,
+      FALSE),
     budget_participation_index = rescale(ogp_participation_fisc_open)) %>%
-  select(country_standard, year, budget_participation_index, everything())
+  select(country_standard, year, budget_participation_index, everything()) %>%
+  arrange(country_standard, year)
 
 skim(df_budget_particpation_index)
 histogram(df_budget_particpation_index$budget_participation_index)
@@ -1003,14 +1048,18 @@ histogram(df_budget_particpation_index$budget_participation_index)
 df_pandem_dem_violation_index <- df_all_yr %>%
   select(
     country_standard,
-    year,
     pandem
   ) %>%
-  arrange(country_standard, year) %>%
+  filter(!is.na(country_standard)) %>%
   distinct() %>%
   mutate(
+    incomplete_dem_vio_index = if_else(
+      is.na(pandem),
+      TRUE,
+      FALSE),    
     pandemic_dem_violation_index = rescale(pandem)) %>%
-  select(country_standard, year, pandemic_dem_violation_index, everything())
+  select(country_standard, pandemic_dem_violation_index, everything()) %>%
+  arrange(country_standard)
 
 skim(df_pandem_dem_violation_index)
 histogram(df_pandem_dem_violation_index$pandemic_dem_violation_index)
@@ -1022,14 +1071,29 @@ histogram(df_pandem_dem_violation_index$pandemic_dem_violation_index)
 ```{r}
 
 df_indices_controls <- df_transparency_index %>%
-  select(country_standard, year, transparency_index) %>%
-  full_join(df_trust_index[ , c("country_standard", "year", "trust_index")], by = c("country_standard", "year")) %>%
-  full_join(df_corruption_index[ , c("country_standard", "year", "corruption_index")], by = c("country_standard", "year")) %>%
-  full_join(df_effectiveness_index[ , c("country_standard", "year", "effectiveness_index")], by = c("country_standard", "year")) %>%
-  full_join(df_budget_particpation_index[ , c("country_standard", "year", "budget_participation_index")], by = c("country_standard", "year")) %>%
-  full_join(df_pandem_dem_violation_index[ , c("country_standard", "year", "pandemic_dem_violation_index")], by = c("country_standard", "year")) %>%
+  select(country_standard, year, transparency_index, incomplete_trans_index) %>%
+  full_join(df_budget_transparency_index[ , c("country_standard", "year", "budget_transparency_index", "incomplete_bdgt_trans_index")], by = c("country_standard", "year")) %>%
+  full_join(df_accountability_index[ , c("country_standard", "year", "accountability_index", "incomplete_acnt_index")], by = c("country_standard", "year")) %>%
+  full_join(df_trust_index[ , c("country_standard", "year", "trust_index", "incomplete_trust_index")], by = c("country_standard", "year")) %>%
+  full_join(df_corruption_index[ , c("country_standard", "year", "corruption_index", "incomplete_corrupt_index")], by = c("country_standard", "year")) %>%
+  full_join(df_effectiveness_index[ , c("country_standard", "year", "effectiveness_index", "incomplete_effect_index")], by = c("country_standard", "year")) %>%
+  full_join(df_budget_particpation_index[ , c("country_standard", "year", "budget_participation_index", "incomplete_bdgt_part_index")], by = c("country_standard", "year")) %>%
+  full_join(df_pandem_dem_violation_index[ , c("country_standard", "pandemic_dem_violation_index", "incomplete_dem_vio_index")], by = "country_standard") %>%
   full_join(df_covid_index[ , c("country_standard", "covid_index")], by = "country_standard") %>%
-  full_join(df_controls, by = "country_standard")
+  full_join(df_controls, by = "country_standard") %>%
+  filter(!is.na(country_standard)) %>%
+  arrange(country_standard, year)
+
+df_indices_controls_incomplete <- df_indices_controls %>%
+  select(country_standard, year, starts_with('incomplete')) %>%
+  replace(is.na(.), TRUE) %>%
+  summarise(across(where(is.logical), sum))
+
+df_indices_controls <- df_indices_controls %>% 
+  select(country_standard, year, everything(), -starts_with('incomplete')) %>%
+  mutate(across(where(is.numeric), ~ case_when(!is.nan(.x) ~ .x)))
+
+skim(df_indices_controls)
 
 write_csv(df_indices_controls, "data/indices_and_controls.csv")
 ```
@@ -1040,6 +1104,161 @@ You can do python code, like in example chunk below.
 
 ```{python include=FALSE}
 print("hello world")
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+get_ipython().system('pip install linearmodels')
+from linearmodels import PanelOLS
+import statsmodels.formula.api as smf
+from statsmodels.base.covtype import get_robustcov_results
+
+
+# In[2]:
+
+
+path = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls.csv'
+ndi_df = pd.read_csv(path)
+
+
+# In[3]:
+
+
+ndi_df
+
+
+# In[4]:
+
+
+#Replace NaN with mean of column 
+column_means = ndi_df.mean()
+ndi_df = ndi_df.fillna(column_means)
+
+
+# In[5]:
+
+
+ndi_df
+
+
+# In[6]:
+
+
+#Drop last 15 rows with NA values in country_standard
+ndi_df = ndi_df.dropna(subset=['country_standard'])
+
+
+# In[7]:
+
+
+ndi_df
+
+
+# In[8]:
+
+
+pairplot = sns.pairplot(data = ndi_df)
+
+
+# In[9]:
+
+
+#pairplot.savefig("Indices, transparency and controls pairplot.png")
+
+
+# In[10]:
+
+
+reg_corruption = smf.ols('corruption_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+
+
+# In[11]:
+
+
+reg_corruption.summary()
+
+
+# In[12]:
+
+
+reg_trust = smf.ols('trust_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+
+
+# In[13]:
+
+
+reg_trust.summary()
+
+
+# In[14]:
+
+
+reg_effectiveness = smf.ols('effectiveness_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+
+
+# In[15]:
+
+
+reg_effectiveness.summary()
+
+
+# In[16]:
+
+
+reg_bugetparticipation = smf.ols('budget_participation_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+
+
+# In[17]:
+
+
+reg_bugetparticipation.summary()
+
+
+# In[18]:
+
+
+df_2020 = ndi_df.loc[ndi_df['year'] == 2020]
+
+
+# In[19]:
+
+
+df_2020
+
+
+# In[20]:
+
+
+#COVID outcomes model
+reg_covid = smf.ols('covid_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
+
+
+# In[21]:
+
+
+reg_covid.summary()
+
+
+# In[22]:
+
+
+#Fixed effects or not, only 2020? 
+#reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + percap_domestic_health_expenditure + median_age + aged_65_older + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+
+
+# In[23]:
+
+
+reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
+
+
+# In[24]:
+
+
+reg_pandemic_violations.summary()
+
 ```
 
 ## Notes to self:
@@ -1051,6 +1270,12 @@ There are about 20 countries missing Gini index data
 From OWID Covid, look at "stringeny_index"
 
 Is it an issue that controls don't change by year?
+
+should we make a "most recent" that just pulls the most recent value availalbe for each
+
+
+
+freedom house includes 2020 data? I don't see it right now
 
 
 Additional ideas for controls:
