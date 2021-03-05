@@ -58,116 +58,102 @@ ndi_df
 # In[8]:
 
 
-#Covid model data (only has 2020)
-data2020 = pd.read_csv(r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/merged_data_yr_2020.csv')
-covid_index_df = pd.read_csv(r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/covid-19_index.csv')
+pairplot = sns.pairplot(data = ndi_df)
 
 
 # In[9]:
 
 
-covid_df = pd.merge(data2020, covid_index_df, on="country_standard")
+#pairplot.savefig("Indices, transparency and controls pairplot.png")
 
 
 # In[10]:
 
 
-#pairplot = sns.pairplot(data = ndi_df)
+reg_corruption = smf.ols('corruption_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
 # In[11]:
 
 
-#pairplot.savefig("Indices, transparency and controls pairplot.png")
-
-
-# In[27]:
-
-
-reg_corruption = smf.ols('corruption_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
-
-
-# In[28]:
-
-
 reg_corruption.summary()
 
 
-# In[56]:
+# In[12]:
 
 
 reg_trust = smf.ols('trust_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
-# In[57]:
+# In[13]:
 
 
 reg_trust.summary()
 
 
-# In[52]:
+# In[14]:
 
 
 reg_effectiveness = smf.ols('effectiveness_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
-# In[53]:
+# In[15]:
 
 
 reg_effectiveness.summary()
 
 
-# In[31]:
+# In[16]:
 
 
 reg_bugetparticipation = smf.ols('budget_participation_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
-# In[32]:
+# In[17]:
 
 
 reg_bugetparticipation.summary()
 
 
-# In[20]:
+# In[18]:
 
 
 df_2020 = ndi_df.loc[ndi_df['year'] == 2020]
 
 
-# In[21]:
+# In[19]:
 
 
 df_2020
 
 
-# In[43]:
+# In[20]:
 
 
 #COVID outcomes model
 reg_covid = smf.ols('covid_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
 
 
-# In[45]:
+# In[21]:
 
 
 reg_covid.summary()
 
 
-# In[24]:
+# In[22]:
 
 
 #Fixed effects or not, only 2020? 
 #reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + percap_domestic_health_expenditure + median_age + aged_65_older + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
-# In[48]:
+# In[23]:
 
 
 reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
 
 
-# In[49]:
+# In[24]:
 
 
 reg_pandemic_violations.summary()

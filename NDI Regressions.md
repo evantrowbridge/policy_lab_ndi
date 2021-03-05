@@ -11,15 +11,15 @@ from statsmodels.base.covtype import get_robustcov_results
 ```
 
     Requirement already satisfied: linearmodels in ./opt/anaconda3/lib/python3.7/site-packages (4.21)
+    Requirement already satisfied: scipy>=1.2 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (1.4.1)
+    Requirement already satisfied: numpy>=1.16 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (1.18.1)
     Requirement already satisfied: patsy in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (0.5.1)
-    Requirement already satisfied: Cython>=0.29.21 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (0.29.22)
-    Requirement already satisfied: pyhdfe>=0.1 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (0.1.0)
-    Requirement already satisfied: statsmodels>=0.11 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (0.11.0)
     Requirement already satisfied: property-cached>=1.6.3 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (1.6.4)
     Requirement already satisfied: pandas>=0.24 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (0.25.3)
-    Requirement already satisfied: scipy>=1.2 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (1.4.1)
     Requirement already satisfied: mypy-extensions>=0.4 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (0.4.3)
-    Requirement already satisfied: numpy>=1.16 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (1.18.1)
+    Requirement already satisfied: statsmodels>=0.11 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (0.11.0)
+    Requirement already satisfied: Cython>=0.29.21 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (0.29.22)
+    Requirement already satisfied: pyhdfe>=0.1 in ./opt/anaconda3/lib/python3.7/site-packages (from linearmodels) (0.1.0)
     Requirement already satisfied: six in ./opt/anaconda3/lib/python3.7/site-packages (from patsy->linearmodels) (1.14.0)
     Requirement already satisfied: pytz>=2017.2 in ./opt/anaconda3/lib/python3.7/site-packages (from pandas>=0.24->linearmodels) (2019.3)
     Requirement already satisfied: python-dateutil>=2.6.1 in ./opt/anaconda3/lib/python3.7/site-packages (from pandas>=0.24->linearmodels) (2.8.1)
@@ -793,20 +793,12 @@ ndi_df
 
 
 ```python
-#Covid model data (only has 2020)
-data2020 = pd.read_csv(r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/merged_data_yr_2020.csv')
-covid_index_df = pd.read_csv(r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/covid-19_index.csv')
+pairplot = sns.pairplot(data = ndi_df)
 ```
 
 
-```python
-covid_df = pd.merge(data2020, covid_index_df, on="country_standard")
-```
+![png](output_7_0.png)
 
-
-```python
-#pairplot = sns.pairplot(data = ndi_df)
-```
 
 
 ```python
@@ -845,7 +837,7 @@ reg_corruption.summary()
   <th>Date:</th>             <td>Fri, 05 Mar 2021</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
 </tr>
 <tr>
-  <th>Time:</th>                 <td>10:31:48</td>     <th>  Log-Likelihood:    </th> <td>  1859.7</td> 
+  <th>Time:</th>                 <td>13:17:42</td>     <th>  Log-Likelihood:    </th> <td>  1859.7</td> 
 </tr>
 <tr>
   <th>No. Observations:</th>      <td>  3615</td>      <th>  AIC:               </th> <td>  -3709.</td> 
@@ -1613,7 +1605,7 @@ reg_trust.summary()
   <th>Date:</th>             <td>Fri, 05 Mar 2021</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
 </tr>
 <tr>
-  <th>Time:</th>                 <td>10:40:44</td>     <th>  Log-Likelihood:    </th> <td>  4846.7</td> 
+  <th>Time:</th>                 <td>13:17:42</td>     <th>  Log-Likelihood:    </th> <td>  4846.7</td> 
 </tr>
 <tr>
   <th>No. Observations:</th>      <td>  3615</td>      <th>  AIC:               </th> <td>  -9683.</td> 
@@ -2381,7 +2373,7 @@ reg_effectiveness.summary()
   <th>Date:</th>              <td>Fri, 05 Mar 2021</td>   <th>  Prob (F-statistic):</th>   <td>  0.00</td>  
 </tr>
 <tr>
-  <th>Time:</th>                  <td>10:40:11</td>       <th>  Log-Likelihood:    </th>  <td>  5365.7</td> 
+  <th>Time:</th>                  <td>13:17:43</td>       <th>  Log-Likelihood:    </th>  <td>  5365.7</td> 
 </tr>
 <tr>
   <th>No. Observations:</th>       <td>  3615</td>        <th>  AIC:               </th> <td>-1.072e+04</td>
@@ -3149,7 +3141,7 @@ reg_bugetparticipation.summary()
   <th>Date:</th>                  <td>Fri, 05 Mar 2021</td>      <th>  Prob (F-statistic):</th>  <td>  0.00</td>  
 </tr>
 <tr>
-  <th>Time:</th>                      <td>10:33:03</td>          <th>  Log-Likelihood:    </th> <td>  3481.8</td> 
+  <th>Time:</th>                      <td>13:17:43</td>          <th>  Log-Likelihood:    </th> <td>  3481.8</td> 
 </tr>
 <tr>
   <th>No. Observations:</th>           <td>  3615</td>           <th>  AIC:               </th> <td>  -6954.</td> 
@@ -4168,7 +4160,7 @@ reg_covid.summary()
   <th>Date:</th>             <td>Fri, 05 Mar 2021</td> <th>  Prob (F-statistic):</th> <td>3.18e-18</td>
 </tr>
 <tr>
-  <th>Time:</th>                 <td>10:38:41</td>     <th>  Log-Likelihood:    </th> <td>  2.8006</td>
+  <th>Time:</th>                 <td>13:17:43</td>     <th>  Log-Likelihood:    </th> <td>  2.8006</td>
 </tr>
 <tr>
   <th>No. Observations:</th>      <td>   193</td>      <th>  AIC:               </th> <td>   10.40</td>
@@ -4263,7 +4255,7 @@ reg_pandemic_violations.summary()
   <th>Date:</th>                   <td>Fri, 05 Mar 2021</td>       <th>  Prob (F-statistic):</th> <td>3.51e-10</td>
 </tr>
 <tr>
-  <th>Time:</th>                       <td>10:39:19</td>           <th>  Log-Likelihood:    </th> <td>  91.696</td>
+  <th>Time:</th>                       <td>13:17:43</td>           <th>  Log-Likelihood:    </th> <td>  91.696</td>
 </tr>
 <tr>
   <th>No. Observations:</th>            <td>   193</td>            <th>  AIC:               </th> <td>  -167.4</td>
