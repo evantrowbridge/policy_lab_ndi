@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[3]:
 
 
 import pandas as pd
@@ -15,25 +15,11 @@ import statsmodels.formula.api as smf
 from statsmodels.base.covtype import get_robustcov_results
 
 
-# In[2]:
+# In[4]:
 
 
 path = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls.csv'
 ndi_df = pd.read_csv(path)
-
-
-# In[3]:
-
-
-ndi_df
-
-
-# In[4]:
-
-
-#Replace NaN with mean of column 
-column_means = ndi_df.mean()
-ndi_df = ndi_df.fillna(column_means)
 
 
 # In[5]:
@@ -45,8 +31,9 @@ ndi_df
 # In[6]:
 
 
-#Drop last 15 rows with NA values in country_standard
-ndi_df = ndi_df.dropna(subset=['country_standard'])
+#Replace NaN with mean of column 
+column_means = ndi_df.mean()
+ndi_df = ndi_df.fillna(column_means)
 
 
 # In[7]:
@@ -67,10 +54,22 @@ pairplot = sns.pairplot(data = ndi_df)
 #pairplot.savefig("Indices, transparency and controls pairplot.png")
 
 
+# In[12]:
+
+
+reg_accountability = smf.ols('accountability_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+
+
+# In[13]:
+
+
+reg_accountability.summary()
+
+
 # In[10]:
 
 
-reg_corruption = smf.ols('corruption_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+reg_corruption = smf.ols('corruption_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
 # In[11]:
@@ -79,88 +78,87 @@ reg_corruption = smf.ols('corruption_index ~ transparency_index + gdp + gdp_per_
 reg_corruption.summary()
 
 
-# In[12]:
-
-
-reg_trust = smf.ols('trust_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
-
-
-# In[13]:
-
-
-reg_trust.summary()
-
-
 # In[14]:
 
 
-reg_effectiveness = smf.ols('effectiveness_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+reg_trust = smf.ols('trust_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
 # In[15]:
 
 
-reg_effectiveness.summary()
+reg_trust.summary()
 
 
 # In[16]:
 
 
-reg_bugetparticipation = smf.ols('budget_participation_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+reg_effectiveness = smf.ols('effectiveness_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
 # In[17]:
 
 
-reg_bugetparticipation.summary()
+reg_effectiveness.summary()
 
 
 # In[18]:
 
 
-df_2020 = ndi_df.loc[ndi_df['year'] == 2020]
+reg_bugetparticipation = smf.ols('budget_participation_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
 # In[19]:
 
 
-df_2020
+reg_bugetparticipation.summary()
 
 
 # In[20]:
 
 
-#COVID outcomes model
-reg_covid = smf.ols('covid_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
+reg_buget_transparency = smf.ols('budget_transparency_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
 
 
 # In[21]:
 
 
-reg_covid.summary()
-
-
-# In[22]:
-
-
-#Fixed effects or not, only 2020? 
-#reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + percap_domestic_health_expenditure + median_age + aged_65_older + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
-
-
-# In[23]:
-
-
-reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp + gdp_per_capita + gini_2020 + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
+reg_buget_transparency.summary()
 
 
 # In[24]:
 
 
+df_2020 = ndi_df.loc[ndi_df['year'] == 2020]
+
+
+# In[25]:
+
+
+df_2020
+
+
+# In[26]:
+
+
+#COVID outcomes model
+reg_covid = smf.ols('covid_index ~ transparency_index + gdp + gini + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
+
+
+# In[27]:
+
+
+reg_covid.summary()
+
+
+# In[28]:
+
+
+reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp + gini + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
+
+
+# In[30]:
+
+
 reg_pandemic_violations.summary()
-
-
-# In[ ]:
-
-
-
 
