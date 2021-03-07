@@ -41,7 +41,8 @@ The files listed below are located in the Data folder
 
 -   CPI_Transparency_International.xlsx
 
-    -   add info (the source and a link)?
+    -   This comes from Trensparency International's [Corruption Perceptions Index](https://www.transparency.org/en/cpi/2020/index/nzl).
+    -   We multiplied each score beteween 2006 and 2012 by 10 to make it in 0-100 scale as same as after 2013.
 
 -   Gini_coefficient_2020.csv
 
