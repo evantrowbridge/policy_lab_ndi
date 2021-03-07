@@ -105,7 +105,8 @@ The files listed below are located in the Data folder
 
 -   Freedom_house.xlsx
 
-    -   add info (the source and a link)?
+    -   This data comes from Freedom House's [Freedom in the World](https://freedomhouse.org/report/freedom-world)
+    -   We downloaded "Aggregate Category and Subcategory Scores, 2003-2021" and converted status into 0 (Not Free), 0.5 (Partly Free), and 1 (Free)
 
 -   wgi_gov_effective.xlsx
 
