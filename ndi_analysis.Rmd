@@ -581,7 +581,9 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     select(country_standard, year, gdp)
     
 ########################################    
-  
+
+## World Bank Data from 
+    
 ## Gini Coefficient ##
   
   # We're using the Gini coefficient as a control variable
@@ -599,6 +601,31 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     rename(gini = si_pov_gini) %>%
     filter(!is.na(country_standard)) %>%
     select(country_standard, year, gini)
+  
+  
+## GDP Per Capita ##
+  
+  # We're using GDP Per Capita as a control variable
+  #   We are using GDP Per Capita, Purchasing Power Parity in current international $
+  import_gdp_percap <- WDI(indicator = 'NY.GDP.PCAP.PP.CD', start = 2006, end = 2019)
+  
+  # If we wanted to use GDP per capita in current $US (not PPP), can use line below instead
+  # import_gdp_percap<- WDI(indicator = 'NY.GDP.PCAP.CD', start = 2006, end = 2019)
+  
+  df_gdp_percap <- import_gdp_percap %>%
+    clean_names() %>%
+      mutate(
+        country_standard = countrycode(
+          iso2c, 
+          origin = "iso2c", 
+          destination = "country.name"
+          )) %>%
+    rename(gdp_percap = ny_gdp_pcap_pp_cd) %>%
+    # Line below is for non-PPP GDP per capita
+    # rename(gdp_percap = ny_gdp_pcap_cd) %>%
+    filter(!is.na(country_standard)) %>%
+    select(country_standard, year, gdp_percap)  
+  
 ```
 
 
@@ -618,6 +645,7 @@ Merging datasets
     full_join(df_percap_health_expend, by = c("country_standard", "year")) %>%
     full_join(df_gdp, by = c("country_standard", "year")) %>%
     full_join(df_gini, by = c("country_standard", "year")) %>%
+    full_join(df_gdp_percap, by = c("country_standard", "year")) %>%
     full_join(df_wvs, by = c("country_standard", "year")) %>%
     full_join(df_africa_int, by = c("country_standard", "year")) %>%
     select(
@@ -665,6 +693,7 @@ Merging datasets
     full_join(df_gdp_health_expend, by = c("country_standard", "year")) %>%
     full_join(df_percap_health_expend, by = c("country_standard", "year")) %>%
     full_join(df_gdp, by = c("country_standard", "year")) %>%
+    full_join(df_gdp_percap, by = c("country_standard", "year")) %>%
     full_join(df_gini, by = c("country_standard", "year")) %>%
     full_join(df_wvs, by = c("country_standard", "year")) %>%    
     full_join(df_africa_int, by = c("country_standard", "year")) %>%
@@ -672,11 +701,12 @@ Merging datasets
       country_standard, 
       year, 
       median_age:aged_65_older,
-      gdp_per_capita,
       eiu_overall_score:eiu_regime_type,
       ogp_participation_fisc_open:ogp_participating,
       pub_health_exp_percent_gdp,
       everything(),
+      # We import separate GDP per cap below directly from WB
+      -gdp_per_capita,
       -code.x,
       -entity
       ) %>%
@@ -708,12 +738,13 @@ df_controls <- df_all_yr %>%
   group_by(country_standard) %>%
   # These variables don't have values in 2020. Filling in from most recent year
   fill(
-    c(gdp, gini, percap_domestic_health_expenditure)) %>%
+    c(gdp, gini, percap_domestic_health_expenditure, gdp_percap)) %>%
   filter(year==2020) %>%
   select(
     country_standard, 
     gdp,
     gini,
+    gdp_percap,
     percap_domestic_health_expenditure)
   
 df_controls <- df_all_yr_2020 %>%
@@ -721,7 +752,7 @@ df_controls <- df_all_yr_2020 %>%
     country_standard, median_age, aged_65_older) %>%
   full_join(df_controls, by = "country_standard") %>% 
   select(
-    country_standard, gdp, gini,
+    country_standard, gdp, gini, gdp_percap,
         # we discussed using "public health expenditure as a proportion of GDP"
         # as an indicator, but it seemed very similar to the next indicator
         # below, which is "public health expenditure per capita"
@@ -1110,6 +1141,14 @@ df_indices_controls <- df_indices_controls %>%
 skim(df_indices_controls)
 
 write_csv(df_indices_controls, "data/indices_and_controls.csv")
+
+df_indices_mean <- df_indices_controls %>% 
+  select(country_standard:covid_index, - year) %>%
+  group_by(country_standard) %>%
+  summarise(across(transparency_index:covid_index, ~mean(.x, na.rm = TRUE), .names = "mean_{.col}"))
+  
+write_csv(df_indices_mean, "data/country_average_indices.csv")
+
 ```
 
 

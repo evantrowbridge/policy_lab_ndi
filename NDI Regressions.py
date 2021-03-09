@@ -15,7 +15,9 @@ import statsmodels.formula.api as smf
 # In[2]:
 
 
-path = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls.csv'
+#path = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls.csv'
+path = r'/Users/edtro/OneDrive/Documents/GitHub/policy_lab_ndi/data/indices_and_controls.csv'
+
 ndi_df = pd.read_csv(path)
 
 
