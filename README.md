@@ -94,9 +94,9 @@ The files listed below are located in the Data folder
 -   vdem_clean.csv
 
     -   This comes from the [V-Dem Dataset - Version 10](https://www.v-dem.net/en/data/data/v-dem-dataset/).
-    -   Data can be updated to most recent version here: <https://www.v-dem.net/en/data/data/v-dem-dataset-v11/>
     -   We downloaded "Country-Year: V-Dem Core" data and merged three indicators (v2x_libdem: Liberal democracy index), v2x_partipdem: Participatory democracy index, v2x_cspart: Civil society participation index)
     -   This data goes back many years. We include data starting in 2006
+    -   Version 11 was uploaded [here](https://www.v-dem.net/en/data/data/v-dem-dataset-v11/). Next team can update our analysis using this version.
 
 -   PanDem_ts_V5.csv
 
