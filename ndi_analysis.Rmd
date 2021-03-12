@@ -47,7 +47,7 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
                                        iso_code = col_character(), 
                                        continent = col_character(), 
                                        location = col_character(), 
-                                       date = col_date(format = "%m/%d/%Y"),
+                                       date = col_date(format = "%Y-%m-%d"),
                                        tests_units = col_character(),
                                      .default = col_double()))
   
@@ -223,10 +223,8 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
       country_standard = countrycode(
         country_code,
         origin = "iso3c",
-        destination = "country.name"),
-      country_standard = case_when(
-        country_code == "KSV" ~ "Kosovo",
-        TRUE ~ country_standard)) %>%
+        destination = "country.name",
+        custom_match = c('KSV' = 'Kosovo'))) %>%
     select(country_standard, year, cpi_score)
   
 ########################################     
@@ -330,7 +328,6 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
         str_remove(year, "x"))) %>%
     arrange(country_standard, year)
     
-    
 ########################################    
   
 ## V-Dem indicators ##
@@ -342,14 +339,19 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     clean_names() %>%
     # This data set has a very large range of years. Limiting to 2006 and later
     filter(year >= 2006) %>%
-    filter(!country_name %in% c("Kosovo", "Somaliland", "Zanzibar")) %>%  
+    #filter(!country_name %in% c("Kosovo", "Somaliland", "Zanzibar")) %>%  
     mutate(
       iso_code = countrycode(country_name, origin = 'country.name', destination = 'iso3c'),        
       country_standard = countrycode(
           iso_code, 
           origin = "iso3c", 
-          destination = "country.name"
-          )) %>%
+          destination = "country.name"),
+      # Lines below are to address three countries that get left out: 
+      #     Kosovo, Somaliland, Zanzibar
+      country_standard = ifelse(
+        is.na(country_standard),
+        country_name,
+        country_standard)) %>%
     # Adding "vdem" prefix to indicators      
     rename_with( 
       ~ paste("vdem", .x, sep = "_"),
@@ -364,14 +366,18 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     clean_names() %>%
     # This data set has a very large range of years. Limiting to 2006 and later
     filter(year >= 2006) %>%
-    filter(!country_name %in% c("Kosovo", "Somaliland", "Zanzibar")) %>%  
+    #filter(!country_name %in% c("Kosovo", "Somaliland", "Zanzibar")) %>%  
     mutate(
       iso_code = countrycode(country_name, origin = 'country.name', destination = 'iso3c'),        
       country_standard = countrycode(
           iso_code, 
           origin = "iso3c", 
-          destination = "country.name"
-          )) %>%
+          destination = "country.name"),
+      # Lines below are to address ountries that get left out by "countrycode" function
+      country_standard = ifelse(
+        is.na(country_standard),
+        country_name,
+        country_standard)) %>%
     # Adding "vdem" prefix to indicators      
     rename_with( 
       ~ paste("vdem", .x, sep = "_"),
@@ -403,18 +409,22 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
   # Note: the higher the freedom score, the better
   df_fh <- import_Freedom_house %>%
     clean_names() %>%
-    # filter(!countries %in% 
-    #          c('Abkhazia', 'Crimea', 'Eastern Donbas', 'Kosovo', 'Micronesia',
-    #            'Nagorno-Karabakh', 'Somaliland', 'South Ossetia', 'Tibet',
-    #            'Transnistria', 'Chechnya', 'Serbia and Montenegro')) %>%
-    # If I want to take out the line below, import sheet two from the excel file instead
     mutate(
-      iso_code = countrycode(countries, origin = 'country.name', destination = 'iso3c'),        
+      iso_code = countrycode(
+        countries, 
+        origin = 'country.name', 
+        destination = 'iso3c', 
+        custom_match = c('Micronesia' = 'FSM')),        
       country_standard = countrycode(
           iso_code, 
           origin = "iso3c", 
           destination = "country.name"),
-      coutry_standard = ifelse(
+      country_standard = ifelse(
+        is.na(country_standard),
+        countries,
+        country_standard),
+      # Lines below are to address countries that get left out by "countrycode" function
+      country_standard = ifelse(
         is.na(country_standard),
         countries,
         country_standard)) %>%
@@ -499,8 +509,6 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     str_remove("^in_law_") %>% 
     str_trunc(32,  ellipsis = "")
     
-  #names(df_africa_int) <- abbreviate(names(df_africa_int), minlength = 16)
-  #names(df_africa_int) <- names(df_africa_int) %>% str_replace_all("\\_{2,}", "")
   names(df_africa_int) <- names(df_africa_int) %>% make.unique()
   
   df_africa_int <- df_africa_int %>%
@@ -523,72 +531,55 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
     filter(!is.na(year))
   
 ########################################    
-  
-## Public health expenditures as share of GDP   
-  import_gdp_pub_health_expenditures <- read_csv("data/public-health-expenditure-share-GDP-OWID.csv")
-  
-  df_gdp_health_expend <- import_gdp_pub_health_expenditures %>%
-    clean_names() %>%
-    # This data set has a very large range of years. Limiting to 2006 and later    
-    filter(year >= 2006) %>%
-    rename(pub_health_exp_percent_gdp = public_expenditure_on_health_percent_gdp_owid_extrapolated_series) %>%
-    mutate(country_standard = countrycode(
-      code, 
-      origin = "iso3c", 
-      destination = "country.name")) %>%
-    select(country_standard, year, pub_health_exp_percent_gdp, everything())
-
-  attr(df_gdp_health_expend$pub_health_exp_percent_gdp, "label") <- "Public expenditure on health as a percent of GDP"
     
-########################################    
+## World Bank Data from WDI package for control variable options
+#    Public health expenditures per capita , GDP, Gini Coefficient, 
+#    and GDP Per Capita
   
-##  Public health expenditures per capita ##
   
-  import_percap_Public_Health_Expenditure <- read_csv("data/WB_Public_Health_Expenditure_v3.csv")
+## Public health expenditures per capita ##
   
-  df_percap_health_expend <- import_percap_Public_Health_Expenditure %>%
+#    At time of import, data was only available to 2018
+#   Including the Purchasing Power Parity adjustment as well  
+  import_percap_Public_Health_Expenditure <- WDI(indicator = c('SH.XPD.GHED.PC.CD', 'SH.XPD.GHED.PP.CD'), start = 2006)
+  
+  df_percap_health_expend <- import_percap_Public_Health_Expenditure %>% 
     clean_names() %>%
-    # The data includes entries for "Arab World" as a country. Removing that.
-    filter(country_code != "ARB") %>%
-    mutate(country_standard = countrycode(
-      country_code, 
-      origin = "iso3c", 
-      destination = "country.name")) %>%
-    rename(percap_domestic_health_expenditure = domestic_health_expenditure) %>%
-    select(country_standard, year, everything(), -country_name, -country_code)
-
-########################################      
-    
+    mutate(
+        country_standard = countrycode(
+          iso2c, 
+          origin = "iso2c", 
+          destination = "country.name",
+          custom_match = c('XK' = 'Kosovo'))) %>% 
+    rename(
+      percap_domestic_health_expenditure = sh_xpd_ghed_pc_cd,
+      percap_domestic_health_expenditure_ppp = sh_xpd_ghed_pp_cd) %>%
+    filter(!is.na(country_standard)) %>%
+    select(country_standard, year, percap_domestic_health_expenditure, percap_domestic_health_expenditure_ppp)
+  
+  
 ## GDP Data ##
   
-  # We're using GDP as a control variable
-  import_GDP_data <- read_excel("data/GDP_data.xlsx")
+  # At time of import, data was only available to 2019
+  import_GDP_data <- WDI(indicator = 'NY.GDP.MKTP.CD', start = 2006)
   
-  df_gdp <- import_GDP_data %>%
+  df_gdp <- import_GDP_data %>% 
     clean_names() %>%
-    filter(!country_code %in% 
-    c('ARB', 'CEB', 'CSS', 'EAP', 'EAR', 'EAS', 'ECA', 'ECS', 'EMU', 'EUU', 
-    'FCS', 'HIC', 'HPC', 'IBD', 'IBT', 'IDA', 'IDB', 'IDX', 'INX', 'LAC', 
-    'LCN', 'LDC', 'LIC', 'LMC', 'LMY', 'LTE', 'MEA', 'MIC', 'MNA', 'NAC', 
-    'OED', 'OSS', 'PRE', 'PSS', 'PST', 'SAS', 'SSA', 'SSF', 'SST', 'TEA', 
-    'TEC', 'TLA', 'TMN', 'TSA', 'TSS', 'UMC', 'WLD')) %>%
-    mutate(country_standard = countrycode(
-      country_code, 
-      # Note that this uses WB as country code style, not iso3c
-      origin = "wb", 
-      destination = "country.name")) %>%
+    mutate(
+        country_standard = countrycode(
+          iso2c, 
+          origin = "iso2c", 
+          destination = "country.name",
+          custom_match = c('XK' = 'Kosovo'))) %>% 
+    rename(gdp = ny_gdp_mktp_cd) %>%
     filter(!is.na(country_standard)) %>%
     select(country_standard, year, gdp)
     
-########################################    
-
-## World Bank Data from 
-    
+  
 ## Gini Coefficient ##
   
-  # We're using the Gini coefficient as a control variable
-  # Gini data is only up to date through 2018
-  import_Gini_coefficient <- WDI(indicator = 'SI.POV.GINI', start = 2006, end = 2018)
+  # At time of import, data was only available to 2018
+  import_Gini_coefficient <- WDI(indicator = 'SI.POV.GINI', start = 2006)
   
   df_gini <- import_Gini_coefficient %>%
     clean_names() %>%
@@ -596,7 +587,8 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
         country_standard = countrycode(
           iso2c, 
           origin = "iso2c", 
-          destination = "country.name"
+          destination = "country.name",
+          custom_match = c('XK' = 'Kosovo')
           )) %>%
     rename(gini = si_pov_gini) %>%
     filter(!is.na(country_standard)) %>%
@@ -606,11 +598,9 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
 ## GDP Per Capita ##
   
   # We're using GDP Per Capita as a control variable
-  #   We are using GDP Per Capita, Purchasing Power Parity in current international $
-  import_gdp_percap <- WDI(indicator = 'NY.GDP.PCAP.PP.CD', start = 2006, end = 2019)
-  
-  # If we wanted to use GDP per capita in current $US (not PPP), can use line below instead
-  # import_gdp_percap<- WDI(indicator = 'NY.GDP.PCAP.CD', start = 2006, end = 2019)
+  #   We are using GDP Per Capita in current international $
+  #   Including the Purchasing Power Parity adjustment as well
+  import_gdp_percap <- WDI(indicator = c('NY.GDP.PCAP.CD', 'NY.GDP.PCAP.PP.CD'), start = 2006)
   
   df_gdp_percap <- import_gdp_percap %>%
     clean_names() %>%
@@ -618,13 +608,16 @@ fig_max <- function(x) ifelse( !all(is.na(x)), max(x, na.rm = TRUE), NA)
         country_standard = countrycode(
           iso2c, 
           origin = "iso2c", 
-          destination = "country.name"
+          destination = "country.name",
+          custom_match = c('XK' = 'Kosovo')
           )) %>%
-    rename(gdp_percap = ny_gdp_pcap_pp_cd) %>%
+    rename(
+      gdp_percap_ppp = ny_gdp_pcap_pp_cd,
+      gdp_percap = ny_gdp_pcap_cd) %>%
     # Line below is for non-PPP GDP per capita
     # rename(gdp_percap = ny_gdp_pcap_cd) %>%
     filter(!is.na(country_standard)) %>%
-    select(country_standard, year, gdp_percap)  
+    select(country_standard, year, gdp_percap, gdp_percap_ppp)  
   
 ```
 
@@ -641,7 +634,6 @@ Merging datasets
     full_join(df_vdem, by = c("country_standard", "year")) %>% 
     full_join(df_pandem, by = "country_standard") %>%      
     full_join(df_fh, by = c("country_standard", "year")) %>%       
-    full_join(df_gdp_health_expend, by = c("country_standard", "year")) %>%
     full_join(df_percap_health_expend, by = c("country_standard", "year")) %>%
     full_join(df_gdp, by = c("country_standard", "year")) %>%
     full_join(df_gini, by = c("country_standard", "year")) %>%
@@ -652,16 +644,10 @@ Merging datasets
       country_standard, 
       year, 
       date,
-      median_age:aged_65_older,
-      gdp_per_capita,
-      eiu_overall_score:eiu_regime_type,
-      ogp_participation_fisc_open:ogp_participating,
-      pub_health_exp_percent_gdp,
       everything(),
       -name_country_standard,
       -location,
-      -code.x,
-      -entity
+      -gdp_per_capita # We import separate GDP per cap directly from WB,
       ) %>%
     mutate(post_covid = 
              ifelse(year >= 2020,
@@ -690,7 +676,6 @@ Merging datasets
     full_join(df_vdem, by = c("country_standard", "year")) %>% 
     full_join(df_pandem, by = "country_standard") %>%      
     full_join(df_fh, by = c("country_standard", "year")) %>%       
-    full_join(df_gdp_health_expend, by = c("country_standard", "year")) %>%
     full_join(df_percap_health_expend, by = c("country_standard", "year")) %>%
     full_join(df_gdp, by = c("country_standard", "year")) %>%
     full_join(df_gdp_percap, by = c("country_standard", "year")) %>%
@@ -700,15 +685,8 @@ Merging datasets
     select(
       country_standard, 
       year, 
-      median_age:aged_65_older,
-      eiu_overall_score:eiu_regime_type,
-      ogp_participation_fisc_open:ogp_participating,
-      pub_health_exp_percent_gdp,
       everything(),
-      # We import separate GDP per cap below directly from WB
-      -gdp_per_capita,
-      -code.x,
-      -entity
+      -gdp_per_capita # We import separate GDP per cap directly from WB
       ) %>%
     mutate(post_covid = 
              ifelse(year >= 2020,
@@ -738,27 +716,30 @@ df_controls <- df_all_yr %>%
   group_by(country_standard) %>%
   # These variables don't have values in 2020. Filling in from most recent year
   fill(
-    c(gdp, gini, percap_domestic_health_expenditure, gdp_percap)) %>%
+    c(gdp, gini, 
+      percap_domestic_health_expenditure, percap_domestic_health_expenditure_ppp,
+      gdp_percap, gdp_percap_ppp)) %>%
   filter(year==2020) %>%
   select(
     country_standard, 
     gdp,
     gini,
     gdp_percap,
-    percap_domestic_health_expenditure)
+    gdp_percap_ppp,
+    percap_domestic_health_expenditure,
+    percap_domestic_health_expenditure_ppp)
   
 df_controls <- df_all_yr_2020 %>%
   select(
     country_standard, median_age, aged_65_older) %>%
   full_join(df_controls, by = "country_standard") %>% 
+  mutate(across(median_age:aged_65_older, ~ case_when(!is.nan(.x) ~ .x))) %>%
   select(
-    country_standard, gdp, gini, gdp_percap,
-        # we discussed using "public health expenditure as a proportion of GDP"
-        # as an indicator, but it seemed very similar to the next indicator
-        # below, which is "public health expenditure per capita"
-    #pub_health_exp_percent_gdp, 
-    percap_domestic_health_expenditure, 
-    median_age, aged_65_older)
+    country_standard, gdp, gini, gdp_percap, gdp_percap_ppp,
+    percap_domestic_health_expenditure, percap_domestic_health_expenditure_ppp,
+    median_age, aged_65_older) %>% 
+  # Removing rows with all NA values
+  filter(if_any(gdp:aged_65_older, ~ !is.na(.)))
 
 write_csv(df_controls, "data/controls.csv")
 
@@ -786,6 +767,7 @@ df_covid_index <- df_all_yr %>%
     cum_total_cases_per_million, 
     cum_total_deaths_per_million,
     cum_total_tests_per_thousand) %>%
+  # Removing rows with all NA values
   filter(
     if_any(
       cum_total_cases_per_million:cum_total_deaths_per_million, 
@@ -798,6 +780,7 @@ df_covid_index <- df_all_yr %>%
     stand_total_cases_per_million  = rescale(log(cum_total_cases_per_million), to = c(1, 10)),
     stand_total_deaths_per_million = rescale(log(cum_total_deaths_per_million), to = c(1, 10)),
     stand_total_tests_per_thousand = rescale(log(cum_total_tests_per_thousand), to = c(1, 10)),
+    non_na_sum = rowSums(!is.na(across(cum_total_cases_per_million:cum_total_tests_per_thousand))),
     stand_total_tests_per_thousand_no_NA = ifelse(
       is.na(stand_total_tests_per_thousand), 
       1, 
@@ -805,9 +788,14 @@ df_covid_index <- df_all_yr %>%
     covid_index = rescale(
       (1/stand_total_cases_per_million) +
       (1/stand_total_deaths_per_million) +
-      stand_total_tests_per_thousand_no_NA)
+      stand_total_tests_per_thousand_no_NA),
+    incomplete_covid_index = if_else(
+      non_na_sum < max(non_na_sum),
+      TRUE,
+      FALSE)    
     ) %>%
-  select(country_standard, covid_index, everything())
+  select(country_standard, covid_index, everything()) %>%
+  filter(!is.na(covid_index))
 
 # Reviewing distribution of the data
 histogram(df_covid_index$stand_total_cases_per_million)
@@ -830,9 +818,6 @@ write_csv(df_covid_index, "data/covid-19_index.csv")
 # Transparency Index
 
 ```{r}
-# Since Freedom House data only goes back to 2012, 
-#   the index only goes back to 2012
-
 df_transparency_indicators <- df_all_yr %>%
   select(
     country_standard,
@@ -858,6 +843,7 @@ df_transparency_index <- df_transparency_indicators %>%
     )) %>%
   select(country_standard, year, transparency_index, everything()) %>%
   arrange(country_standard, year) %>%
+  # The line below only keeps transparency index entries 
   filter(!is.na(fh_global_freedom_score) & !is.na(wgi_voice_and_accountability)) %>%
   filter(year <= 2019)
 
@@ -872,7 +858,6 @@ histogram(df_transparency_index$transparency_index)
 df_budget_transparency_index <- df_all_yr %>%
   select(
     country_standard,
-    year,
     ogp_transparency_fisc_open) %>%
   filter(!is.na(country_standard)) %>%
   distinct() %>%
@@ -886,8 +871,8 @@ df_budget_transparency_index <- df_all_yr %>%
       TRUE,
       FALSE),
     budget_transparency_index = rescale(ogp_transparency_fisc_open)) %>%
-  select(country_standard, year, budget_transparency_index, everything()) %>%
-  arrange(country_standard, year)
+  select(country_standard, budget_transparency_index, everything()) %>%
+  arrange(country_standard)
 
 skim(df_budget_transparency_index)
 histogram(df_budget_transparency_index$budget_transparency_index)
@@ -897,7 +882,7 @@ histogram(df_budget_transparency_index$budget_transparency_index)
 
 ```{r}
 
-#   The most recent data in the index is from 2019, but to make it
+#   The most recent data in the index is from 2019
 
 df_accountability_indicators <- df_all_yr %>%
   select(
@@ -906,7 +891,12 @@ df_accountability_indicators <- df_all_yr %>%
     vdem_diagonal_account,
     vdem_vertical_account,
     vdem_horizontal_account
-  ) 
+  ) %>%
+  # Removing rows with all NA values
+  filter(
+    if_any(
+      vdem_diagonal_account:vdem_horizontal_account, 
+      ~ !is.na(.)))
 
 df_accountability_index <- df_accountability_indicators %>%
   filter(!is.na(country_standard)) %>%  
@@ -933,16 +923,8 @@ histogram(df_accountability_index$accountability_index)
 # Trust index
 
 ```{r}
-# What should we do about the many missing WVS values?
-#   Many of the wvs_trust_values are missing
-#   The current index only includes 83 countries
-#   This index has code to use "fill" between missing dates. 
-# Q: Should we use fill?
-
 # NDI seemed interested in "Democratic Political Culture" (This seems to have more to do with the perception of democracy and not trust of government)
 #   Leaving out for now
-
-#### Looking at countries, results are not what I'd expect....
 
 df_trust_indicators <- df_all_yr %>%
   select(
@@ -952,7 +934,12 @@ df_trust_indicators <- df_all_yr %>%
     #eiu_pol_culture,
     wvs_trust_gov,
     wvs_trust_court,
-    wvs_trust_elect)
+    wvs_trust_elect) %>%
+  # Removing rows with all NA values
+  filter(
+    if_any(
+      wvs_trust_parliament:wvs_trust_elect, 
+      ~ !is.na(.)))
 
 df_trust_index <- df_trust_indicators %>%
   filter(!is.na(country_standard)) %>%  
@@ -982,8 +969,9 @@ histogram(df_trust_index$trust_index)
 ```{r}
 
 # We have option to include WVS corruption indicator, but it is not very comprehensive
+# Even though CPI has 2020 data, limiting to 2019 or earlier to avoid
+#   perception of a big shock
 
-# CPI score only starts in 2012
 df_corruption_indicators <- df_all_yr %>%
   select(
     country_standard,
@@ -991,7 +979,12 @@ df_corruption_indicators <- df_all_yr %>%
     wgi_control_of_corruption,
     #wvs_corruption,
     cpi_score) %>%
-  arrange(country_standard, year)
+  arrange(country_standard, year) %>%
+  # Removing rows with all NA values
+  filter(
+    if_any(
+      wgi_control_of_corruption:cpi_score, 
+      ~ !is.na(.)))
 
 df_corruption_index <- df_corruption_indicators %>%
   filter(!is.na(country_standard)) %>%  
@@ -1009,7 +1002,7 @@ df_corruption_index <- df_corruption_indicators %>%
       FALSE)) %>%    
   select(country_standard, year, corruption_index, everything()) %>%
   arrange(country_standard, year) %>%
-  filter(!is.na(cpi_score) & !is.na(wgi_control_of_corruption)) %>%
+  #filter(!is.na(cpi_score) & !is.na(wgi_control_of_corruption)) %>%
   filter(year <= 2019)
 
 skim(df_corruption_index)
@@ -1018,24 +1011,24 @@ histogram(df_corruption_index$corruption_index)
 # Effectiveness Index
 
 ```{r}
-# I re-use 2019 wgi numbers in 2020.
+# Even though EIU has 2020 data, limiting to 2019 or earlier to avoid
+#   perception of a big shock
 
 df_effectiveness_indicators <- df_all_yr %>%
   select(
     country_standard,
     year,
     wgi_govt_effective,
-    eiu_gov_func)
+    eiu_gov_func) %>%
+  # Removing rows with all NA values
+  filter(
+    if_any(
+      wgi_govt_effective:eiu_gov_func, 
+      ~ !is.na(.)))
 
 df_effectiveness_index <- df_effectiveness_indicators %>%
   filter(!is.na(country_standard)) %>%  
   distinct() %>%
-  #arrange(country_standard, year) %>%
-  # mutate(
-  #   wgi_govt_effective = ifelse(
-  #     year==2020,
-  #     lag(wgi_govt_effective),
-  #     wgi_govt_effective)) %>%
   mutate(
     non_na_sum = rowSums(!is.na(across(wgi_govt_effective:eiu_gov_func))),
     across(
@@ -1050,7 +1043,7 @@ df_effectiveness_index <- df_effectiveness_indicators %>%
   select(country_standard, year, effectiveness_index, everything()) %>%
   arrange(country_standard, year) %>%
   # Most of these are small, island countries. Notably Somalia is dropped. 
-  filter(!is.na(wgi_govt_effective) & !is.na(eiu_gov_func)) %>%
+  #filter(!is.na(wgi_govt_effective) & !is.na(eiu_gov_func)) %>%
   filter(year <= 2019)
 
 skim(df_effectiveness_index)
@@ -1066,7 +1059,6 @@ histogram(df_effectiveness_index$effectiveness_index)
 df_budget_particpation_index <- df_all_yr %>%
   select(
     country_standard,
-    year,
     ogp_participation_fisc_open) %>%
   filter(!is.na(country_standard)) %>%
   distinct() %>%
@@ -1080,11 +1072,12 @@ df_budget_particpation_index <- df_all_yr %>%
       TRUE,
       FALSE),
     budget_participation_index = rescale(ogp_participation_fisc_open)) %>%
-  select(country_standard, year, budget_participation_index, everything()) %>%
-  arrange(country_standard, year)
+  select(country_standard, budget_participation_index, everything()) %>%
+  arrange(country_standard)
 
 skim(df_budget_particpation_index)
 histogram(df_budget_particpation_index$budget_participation_index)
+
 ```
 
 # Pandemic Violation Index
@@ -1117,21 +1110,25 @@ histogram(df_pandem_dem_violation_index$pandemic_dem_violation_index)
 
 df_indices_controls <- df_transparency_index %>%
   select(country_standard, year, transparency_index, incomplete_trans_index) %>%
-  full_join(df_budget_transparency_index[ , c("country_standard", "year", "budget_transparency_index", "incomplete_bdgt_trans_index")], by = c("country_standard", "year")) %>%
+  full_join(df_budget_transparency_index[ , c("country_standard", "budget_transparency_index", "incomplete_bdgt_trans_index")], by = "country_standard") %>%
   full_join(df_accountability_index[ , c("country_standard", "year", "accountability_index", "incomplete_acnt_index")], by = c("country_standard", "year")) %>%
   full_join(df_trust_index[ , c("country_standard", "year", "trust_index", "incomplete_trust_index")], by = c("country_standard", "year")) %>%
   full_join(df_corruption_index[ , c("country_standard", "year", "corruption_index", "incomplete_corrupt_index")], by = c("country_standard", "year")) %>%
   full_join(df_effectiveness_index[ , c("country_standard", "year", "effectiveness_index", "incomplete_effect_index")], by = c("country_standard", "year")) %>%
-  full_join(df_budget_particpation_index[ , c("country_standard", "year", "budget_participation_index", "incomplete_bdgt_part_index")], by = c("country_standard", "year")) %>%
+  full_join(df_budget_particpation_index[ , c("country_standard", "budget_participation_index", "incomplete_bdgt_part_index")], "country_standard") %>%
   full_join(df_pandem_dem_violation_index[ , c("country_standard", "pandemic_dem_violation_index", "incomplete_dem_vio_index")], by = "country_standard") %>%
-  full_join(df_covid_index[ , c("country_standard", "covid_index")], by = "country_standard") %>%
+  full_join(df_covid_index[ , c("country_standard", "covid_index", 'incomplete_covid_index')], by = "country_standard") %>%
   full_join(df_controls, by = "country_standard") %>%
   filter(!is.na(country_standard)) %>%
+  filter(!is.na(year)) %>%
   arrange(country_standard, year)
+
 
 df_indices_controls_incomplete <- df_indices_controls %>%
   select(country_standard, year, starts_with('incomplete')) %>%
-  replace(is.na(.), TRUE) %>%
+  replace(is.na(.), TRUE)
+
+df_indices_controls_incomplete_summary <- df_indices_controls_incomplete %>%
   summarise(across(where(is.logical), sum))
 
 df_indices_controls <- df_indices_controls %>% 
