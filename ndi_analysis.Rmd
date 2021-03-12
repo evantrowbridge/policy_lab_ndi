@@ -1116,12 +1116,12 @@ histogram(df_pandem_dem_violation_index$pandemic_dem_violation_index)
 
 df_indices_controls <- df_transparency_index %>%
   select(country_standard, year, transparency_index, incomplete_trans_index) %>%
-  full_join(df_budget_transparency_index[ , c("country_standard", "budget_transparency_index", "incomplete_bdgt_trans_index")], by = "country_standard") %>%
   full_join(df_accountability_index[ , c("country_standard", "year", "accountability_index", "incomplete_acnt_index")], by = c("country_standard", "year")) %>%
   full_join(df_trust_index[ , c("country_standard", "year", "trust_index", "incomplete_trust_index")], by = c("country_standard", "year")) %>%
   full_join(df_corruption_index[ , c("country_standard", "year", "corruption_index", "incomplete_corrupt_index")], by = c("country_standard", "year")) %>%
   full_join(df_effectiveness_index[ , c("country_standard", "year", "effectiveness_index", "incomplete_effect_index")], by = c("country_standard", "year")) %>%
-  full_join(df_budget_particpation_index[ , c("country_standard", "budget_participation_index", "incomplete_bdgt_part_index")], "country_standard") %>%
+  full_join(df_budget_particpation_index[ , c("country_standard", "budget_participation_index", "incomplete_bdgt_part_index")], by = "country_standard") %>%
+  full_join(df_budget_transparency_index[ , c("country_standard", "budget_transparency_index", "incomplete_bdgt_trans_index")], by = "country_standard") %>%
   full_join(df_pandem_dem_violation_index[ , c("country_standard", "pandemic_dem_violation_index", "incomplete_dem_vio_index")], by = "country_standard") %>%
   full_join(df_covid_index[ , c("country_standard", "covid_index", 'incomplete_covid_index')], by = "country_standard") %>%
   full_join(df_controls, by = "country_standard") %>%
