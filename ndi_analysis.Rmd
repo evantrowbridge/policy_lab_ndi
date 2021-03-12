@@ -855,10 +855,14 @@ histogram(df_transparency_index$transparency_index)
 ```{r}
 # I assign "0" to NA values (assuming that means countries not participating)
 
-df_budget_transparency_index <- df_all_yr %>%
+country_list <- read_csv("data/country_list.csv")
+
+df_budget_transparency_index <- df_all_yr %>% 
+  filter(year == 2019) %>%
   select(
     country_standard,
     ogp_transparency_fisc_open) %>%
+  full_join(country_list, by = "country_standard") %>%
   filter(!is.na(country_standard)) %>%
   distinct() %>%
   mutate(
@@ -1057,9 +1061,11 @@ histogram(df_effectiveness_index$effectiveness_index)
 # I assign "0" to NA values (assuming that means countries not participating)
 
 df_budget_particpation_index <- df_all_yr %>%
+  filter(year == 2019) %>%
   select(
     country_standard,
-    ogp_participation_fisc_open) %>%
+    ogp_participation_fisc_open) %>% 
+  full_join(country_list, by = "country_standard") %>%
   filter(!is.na(country_standard)) %>%
   distinct() %>%
   mutate(
