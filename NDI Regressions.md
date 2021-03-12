@@ -15,49 +15,347 @@ ndi_df = pd.read_csv(path)
 
 
 ```python
-#Replace NaN with mean of column 
-column_means = ndi_df.mean()
-ndi_df = ndi_df.fillna(column_means)
+ndi_df
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>country_standard</th>
+      <th>year</th>
+      <th>transparency_index</th>
+      <th>budget_transparency_index</th>
+      <th>accountability_index</th>
+      <th>trust_index</th>
+      <th>corruption_index</th>
+      <th>effectiveness_index</th>
+      <th>budget_participation_index</th>
+      <th>pandemic_dem_violation_index</th>
+      <th>covid_index</th>
+      <th>gdp</th>
+      <th>gini</th>
+      <th>gdp_percap</th>
+      <th>percap_domestic_health_expenditure</th>
+      <th>median_age</th>
+      <th>aged_65_older</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Afghanistan</td>
+      <td>2006</td>
+      <td>0.398481</td>
+      <td>0.0</td>
+      <td>0.621583</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.109936</td>
+      <td>0.0</td>
+      <td>0.214286</td>
+      <td>0.012655</td>
+      <td>1.929110e+10</td>
+      <td>NaN</td>
+      <td>2156.419482</td>
+      <td>2.578007</td>
+      <td>18.6</td>
+      <td>2.581</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Afghanistan</td>
+      <td>2007</td>
+      <td>0.404977</td>
+      <td>0.0</td>
+      <td>0.623198</td>
+      <td>NaN</td>
+      <td>0.910703</td>
+      <td>0.133040</td>
+      <td>0.0</td>
+      <td>0.214286</td>
+      <td>0.012655</td>
+      <td>1.929110e+10</td>
+      <td>NaN</td>
+      <td>2156.419482</td>
+      <td>2.578007</td>
+      <td>18.6</td>
+      <td>2.581</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Afghanistan</td>
+      <td>2008</td>
+      <td>0.391248</td>
+      <td>0.0</td>
+      <td>0.629477</td>
+      <td>NaN</td>
+      <td>0.933634</td>
+      <td>0.143647</td>
+      <td>0.0</td>
+      <td>0.214286</td>
+      <td>0.012655</td>
+      <td>1.929110e+10</td>
+      <td>NaN</td>
+      <td>2156.419482</td>
+      <td>2.578007</td>
+      <td>18.6</td>
+      <td>2.581</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Afghanistan</td>
+      <td>2009</td>
+      <td>0.115751</td>
+      <td>0.0</td>
+      <td>0.630297</td>
+      <td>NaN</td>
+      <td>0.933071</td>
+      <td>0.144919</td>
+      <td>0.0</td>
+      <td>0.214286</td>
+      <td>0.012655</td>
+      <td>1.929110e+10</td>
+      <td>NaN</td>
+      <td>2156.419482</td>
+      <td>2.578007</td>
+      <td>18.6</td>
+      <td>2.581</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Afghanistan</td>
+      <td>2010</td>
+      <td>0.112175</td>
+      <td>0.0</td>
+      <td>0.627897</td>
+      <td>NaN</td>
+      <td>0.939024</td>
+      <td>0.147968</td>
+      <td>0.0</td>
+      <td>0.214286</td>
+      <td>0.012655</td>
+      <td>1.929110e+10</td>
+      <td>NaN</td>
+      <td>2156.419482</td>
+      <td>2.578007</td>
+      <td>18.6</td>
+      <td>2.581</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>3973</th>
+      <td>Zimbabwe</td>
+      <td>2017</td>
+      <td>0.388089</td>
+      <td>0.0</td>
+      <td>0.543230</td>
+      <td>NaN</td>
+      <td>0.851687</td>
+      <td>0.237870</td>
+      <td>0.0</td>
+      <td>0.500000</td>
+      <td>0.271321</td>
+      <td>2.144076e+10</td>
+      <td>44.3</td>
+      <td>2961.446428</td>
+      <td>39.249222</td>
+      <td>19.6</td>
+      <td>2.822</td>
+    </tr>
+    <tr>
+      <th>3974</th>
+      <td>Zimbabwe</td>
+      <td>2018</td>
+      <td>0.146885</td>
+      <td>0.0</td>
+      <td>0.533216</td>
+      <td>NaN</td>
+      <td>0.847306</td>
+      <td>0.236812</td>
+      <td>0.0</td>
+      <td>0.500000</td>
+      <td>0.271321</td>
+      <td>2.144076e+10</td>
+      <td>44.3</td>
+      <td>2961.446428</td>
+      <td>39.249222</td>
+      <td>19.6</td>
+      <td>2.822</td>
+    </tr>
+    <tr>
+      <th>3975</th>
+      <td>Zimbabwe</td>
+      <td>2019</td>
+      <td>0.394583</td>
+      <td>0.0</td>
+      <td>0.504282</td>
+      <td>NaN</td>
+      <td>0.836403</td>
+      <td>0.261814</td>
+      <td>0.0</td>
+      <td>0.500000</td>
+      <td>0.271321</td>
+      <td>2.144076e+10</td>
+      <td>44.3</td>
+      <td>2961.446428</td>
+      <td>39.249222</td>
+      <td>19.6</td>
+      <td>2.822</td>
+    </tr>
+    <tr>
+      <th>3976</th>
+      <td>Zimbabwe</td>
+      <td>2020</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.402851</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>0.500000</td>
+      <td>0.271321</td>
+      <td>2.144076e+10</td>
+      <td>44.3</td>
+      <td>2961.446428</td>
+      <td>39.249222</td>
+      <td>19.6</td>
+      <td>2.822</td>
+    </tr>
+    <tr>
+      <th>3977</th>
+      <td>Zimbabwe</td>
+      <td>2021</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>0.500000</td>
+      <td>0.271321</td>
+      <td>2.144076e+10</td>
+      <td>44.3</td>
+      <td>2961.446428</td>
+      <td>39.249222</td>
+      <td>19.6</td>
+      <td>2.822</td>
+    </tr>
+  </tbody>
+</table>
+<p>3978 rows × 17 columns</p>
+</div>
+
+
+
+
+```python
+#Transparency without covid models
+pairplot = sns.pairplot(data = ndi_df, vars=['transparency_index', 'budget_transparency_index', 'accountability_index', 'trust_index', 'corruption_index', 'effectiveness_index', 'budget_participation_index', 'gdp_percap'])
+```
+
+
+![png](output_3_0.png)
+
+
+
+```python
+#Transparency and covid models
+pairplot_covid = sns.pairplot(data = ndi_df, vars=['transparency_index', 'pandemic_dem_violation_index', 'covid_index', 'gdp_percap', 'percap_domestic_health_expenditure', 'median_age', 'aged_65_older'])
+```
+
+
+![png](output_4_0.png)
+
+
+
+```python
+#pairplot.savefig("Transparency without covid models.png")
 ```
 
 
 ```python
-pairplot = sns.pairplot(data = ndi_df)
+#pairplot_covid.savefig("Transparency on covid models.png")
 ```
 
 
 ```python
-#pairplot.savefig("Indices, transparency and controls pairplot.png")
+#Significant and positive
+available_data = ndi_df.loc[:,['accountability_index', 'transparency_index', 'gdp_percap', 'country_standard']].dropna(how='any')
+reg_accountability = smf.ols('accountability_index ~ transparency_index + gdp_percap + C(country_standard)', available_data).fit(cov_type='cluster', cov_kwds={'groups': available_data['country_standard']})
 ```
 
 
 ```python
-reg_accountability = smf.ols('accountability_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+#Significant and negative
+corr = ndi_df.loc[:,['corruption_index', 'transparency_index', 'gdp_percap', 'country_standard']].dropna(how='any')
+reg_corruption = smf.ols('corruption_index ~ transparency_index + gdp_percap + C(country_standard)', corr).fit(cov_type='cluster', cov_kwds={'groups': corr['country_standard']})
 ```
 
 
 ```python
-reg_corruption = smf.ols('corruption_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+#Not significant positive, very few observations
+trust = ndi_df.loc[:,['trust_index', 'transparency_index', 'gdp_percap', 'country_standard']].dropna(how='any')
+reg_trust = smf.ols('trust_index ~ transparency_index + gdp_percap + C(country_standard)', trust).fit(cov_type='cluster', cov_kwds={'groups': trust['country_standard']})
 ```
 
 
 ```python
-reg_trust = smf.ols('trust_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+#Significant and positive
+effect = ndi_df.loc[:,['effectiveness_index', 'transparency_index', 'gdp_percap', 'country_standard']].dropna(how='any')
+reg_effectiveness = smf.ols('effectiveness_index ~ transparency_index + gdp_percap + C(country_standard)', effect, missing='drop').fit(cov_type='cluster', cov_kwds={'groups': effect['country_standard']})
 ```
 
 
 ```python
-reg_effectiveness = smf.ols('effectiveness_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+#Not significant negative
+budget_particip = ndi_df.loc[:,['budget_participation_index', 'transparency_index', 'gdp_percap', 'country_standard']].dropna(how='any')
+reg_bugetparticipation = smf.ols('budget_participation_index ~ transparency_index + gdp_percap + C(country_standard)', budget_particip).fit(cov_type='cluster', cov_kwds={'groups': budget_particip['country_standard']})
 ```
 
 
 ```python
-reg_bugetparticipation = smf.ols('budget_participation_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
-```
-
-
-```python
-reg_buget_transparency = smf.ols('budget_transparency_index ~ transparency_index + gdp + gini + C(country_standard)', ndi_df).fit(cov_type='cluster', cov_kwds={'groups': ndi_df['country_standard']})
+#Not significant positive
+budget_transp = ndi_df.loc[:,['budget_transparency_index', 'transparency_index', 'gdp_percap', 'country_standard']].dropna(how='any')
+reg_buget_transparency = smf.ols('budget_transparency_index ~ transparency_index + gdp_percap + C(country_standard)', budget_transp).fit(cov_type='cluster', cov_kwds={'groups': budget_transp['country_standard']})
 ```
 
 
@@ -66,113 +364,123 @@ tables = []
 values = [reg_accountability, reg_corruption, reg_trust, reg_effectiveness, reg_bugetparticipation, reg_buget_transparency]
 for value in values:
     LRresult = value.summary2().tables[1]
-    some_values = ['Intercept', 'transparency_index', 'gdp', 'gini']
-    LRresult = LRresult.loc[LRresult.index.isin(some_values)]
+    some_values = ['Intercept', 'transparency_index', 'gdp_percap']
+    LRresult = LRresult.loc[LRresult.index.isin(some_values)]#.style.apply(highlight_1, axis=1)
     tables.append(LRresult)
 ```
 
-    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 232, but rank is 229
+    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 171, but rank is 1
       'rank is %d' % (J, J_), ValueWarning)
-    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 232, but rank is 229
+    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 179, but rank is 1
       'rank is %d' % (J, J_), ValueWarning)
-    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 232, but rank is 229
+    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 78, but rank is 1
       'rank is %d' % (J, J_), ValueWarning)
-    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 232, but rank is 228
+    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 160, but rank is 1
       'rank is %d' % (J, J_), ValueWarning)
-    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 232, but rank is 229
+    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 188, but rank is 1
       'rank is %d' % (J, J_), ValueWarning)
-    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 232, but rank is 229
+    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 188, but rank is 1
       'rank is %d' % (J, J_), ValueWarning)
 
 
 
 ```python
 #Call on tables to show all of them or by index: tables[i] 
-tables
+tables[0]
 ```
 
 
 
 
-    [                           Coef.      Std.Err.          z         P>|z|  \
-     Intercept           5.286789e-01  8.499324e-03  62.202472  0.000000e+00   
-     transparency_index  4.436738e-01  3.670441e-02  12.087753  1.225937e-33   
-     gdp                -1.383056e-14  1.968341e-15  -7.026506  2.117689e-12   
-     gini               -2.360768e-04  1.704729e-05 -13.848348  1.301722e-43   
-     
-                               [0.025        0.975]  
-     Intercept           5.120206e-01  5.453373e-01  
-     transparency_index  3.717345e-01  5.156131e-01  
-     gdp                -1.768844e-14 -9.972684e-15  
-     gini               -2.694889e-04 -2.026648e-04  ,
-                                Coef.      Std.Err.           z         P>|z|  \
-     Intercept           6.789926e-01  8.418546e-03   80.654386  0.000000e+00   
-     transparency_index -3.245027e-01  3.711495e-02   -8.743180  2.266387e-18   
-     gdp                -3.446067e-14  1.999557e-15  -17.234153  1.471947e-66   
-     gini                7.072667e-03  1.642901e-05  430.498576  0.000000e+00   
-     
-                               [0.025        0.975]  
-     Intercept           6.624926e-01  6.954927e-01  
-     transparency_index -3.972467e-01 -2.517587e-01  
-     gdp                -3.837973e-14 -3.054161e-14  
-     gini                7.040467e-03  7.104868e-03  ,
-                                Coef.      Std.Err.           z     P>|z|  \
-     Intercept           3.672616e-01  1.394115e-03  263.436977  0.000000   
-     transparency_index  3.206261e-03  6.173190e-03    0.519385  0.603492   
-     gdp                 6.564655e-16  3.327905e-16    1.972609  0.048540   
-     gini                1.415570e-03  2.748348e-06  515.062140  0.000000   
-     
-                               [0.025        0.975]  
-     Intercept           3.645291e-01  3.699940e-01  
-     transparency_index -8.892968e-03  1.530549e-02  
-     gdp                 4.208181e-18  1.308723e-15  
-     gini                1.410184e-03  1.420957e-03  ,
-                                Coef.      Std.Err.           z          P>|z|  \
-     Intercept           1.800468e-01  7.593386e-03   23.711003  2.776585e-124   
-     transparency_index  3.346380e-01  3.367567e-02    9.937085   2.871067e-23   
-     gdp                 4.155137e-14  1.815051e-15   22.892667  5.497383e-116   
-     gini               -1.629718e-03  1.503014e-05 -108.429966   0.000000e+00   
-     
-                               [0.025        0.975]  
-     Intercept           1.651640e-01  1.949296e-01  
-     transparency_index  2.686349e-01  4.006411e-01  
-     gdp                 3.799393e-14  4.510880e-14  
-     gini               -1.659176e-03 -1.600259e-03  ,
-                                Coef.      Std.Err.          z          P>|z|  \
-     Intercept           6.509903e-02  1.582245e-03  41.143458   0.000000e+00   
-     transparency_index  1.100233e-02  7.122230e-03   1.544787   1.223979e-01   
-     gdp                -6.319537e-15  4.032768e-16 -15.670469   2.407945e-55   
-     gini               -1.243817e-04  4.719937e-06 -26.352405  4.816760e-153   
-     
-                               [0.025        0.975]  
-     Intercept           6.199789e-02  6.820017e-02  
-     transparency_index -2.956988e-03  2.496164e-02  
-     gdp                -7.109945e-15 -5.529129e-15  
-     gini               -1.336326e-04 -1.151308e-04  ,
-                                Coef.      Std.Err.         z         P>|z|  \
-     Intercept           1.729465e-02  1.836162e-03  9.418914  4.557777e-21   
-     transparency_index  2.189404e-02  8.014782e-03  2.731707  6.300714e-03   
-     gdp                -3.761452e-16  4.395792e-16 -0.855694  3.921671e-01   
-     gini               -3.654306e-05  4.477711e-06 -8.161103  3.319791e-16   
-     
-                               [0.025        0.975]  
-     Intercept           1.369584e-02  2.089347e-02  
-     transparency_index  6.185352e-03  3.760272e-02  
-     gdp                -1.237705e-15  4.854142e-16  
-     gini               -4.531921e-05 -2.776691e-05  ]
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Coef.</th>
+      <th>Std.Err.</th>
+      <th>z</th>
+      <th>P&gt;|z|</th>
+      <th>[0.025</th>
+      <th>0.975]</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Intercept</th>
+      <td>5.749225e-01</td>
+      <td>1.147231e-02</td>
+      <td>50.113937</td>
+      <td>0.000000</td>
+      <td>0.552437</td>
+      <td>0.597408</td>
+    </tr>
+    <tr>
+      <th>transparency_index</th>
+      <td>2.587581e-01</td>
+      <td>6.702221e-02</td>
+      <td>3.860782</td>
+      <td>0.000113</td>
+      <td>0.127397</td>
+      <td>0.390119</td>
+    </tr>
+    <tr>
+      <th>gdp_percap</th>
+      <td>-2.773302e-07</td>
+      <td>7.738812e-07</td>
+      <td>-0.358363</td>
+      <td>0.720072</td>
+      <td>-0.000002</td>
+      <td>0.000001</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 
 
 
 ```python
-#Select only year 2020 for next two models 
-df_2020 = ndi_df.loc[ndi_df['year'] == 2020]
+#Select years greater than 2018 for next two models 
+df_2020 = ndi_df.loc[ndi_df['year'] > 2018]
 ```
 
 
 ```python
-#COVID outcomes model
-reg_covid = smf.ols('covid_index ~ transparency_index + gdp + gini + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
+#Fill NA values with previous year
+df_2020['transparency_index'].fillna(method='ffill', inplace=True)
+```
+
+    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/pandas/core/generic.py:6287: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame
+    
+    See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      self._update_inplace(new_data)
+
+
+
+```python
+#Keep only 2020
+df_2020 = df_2020.loc[df_2020['year'] == 2020]
+```
+
+
+```python
+#COVID outcomes model Not significant (significant without age controls) 
+reg_covid = smf.ols('covid_index ~ transparency_index + gdp_percap + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
 ```
 
 
@@ -213,66 +521,57 @@ LRresult
   <tbody>
     <tr>
       <th>Intercept</th>
-      <td>-1.128887e-01</td>
-      <td>1.204474e-01</td>
-      <td>-0.937245</td>
-      <td>0.349730</td>
-      <td>-3.503563e-01</td>
-      <td>1.245789e-01</td>
+      <td>-0.051443</td>
+      <td>0.124502</td>
+      <td>-0.413192</td>
+      <td>0.679981</td>
+      <td>-0.297191</td>
+      <td>0.194305</td>
     </tr>
     <tr>
       <th>transparency_index</th>
-      <td>-6.459594e-02</td>
-      <td>6.892106e-02</td>
-      <td>-0.937245</td>
-      <td>0.349730</td>
-      <td>-2.004770e-01</td>
-      <td>7.128513e-02</td>
+      <td>0.064414</td>
+      <td>0.078500</td>
+      <td>0.820556</td>
+      <td>0.413035</td>
+      <td>-0.090534</td>
+      <td>0.219362</td>
     </tr>
     <tr>
-      <th>gdp</th>
-      <td>5.838804e-15</td>
-      <td>9.643596e-15</td>
-      <td>0.605459</td>
-      <td>0.545540</td>
-      <td>-1.317399e-14</td>
-      <td>2.485160e-14</td>
-    </tr>
-    <tr>
-      <th>gini</th>
-      <td>-1.993693e-03</td>
-      <td>2.852820e-03</td>
-      <td>-0.698850</td>
-      <td>0.485434</td>
-      <td>-7.618160e-03</td>
-      <td>3.630774e-03</td>
+      <th>gdp_percap</th>
+      <td>0.000007</td>
+      <td>0.000002</td>
+      <td>3.873579</td>
+      <td>0.000152</td>
+      <td>0.000004</td>
+      <td>0.000011</td>
     </tr>
     <tr>
       <th>percap_domestic_health_expenditure</th>
-      <td>4.532022e-05</td>
-      <td>1.837211e-05</td>
-      <td>2.466795</td>
-      <td>0.014449</td>
-      <td>9.098750e-06</td>
-      <td>8.154170e-05</td>
+      <td>-0.000028</td>
+      <td>0.000029</td>
+      <td>-0.988977</td>
+      <td>0.324063</td>
+      <td>-0.000085</td>
+      <td>0.000028</td>
     </tr>
     <tr>
       <th>median_age</th>
-      <td>1.993618e-02</td>
-      <td>4.812323e-03</td>
-      <td>4.142735</td>
-      <td>0.000050</td>
-      <td>1.044846e-02</td>
-      <td>2.942390e-02</td>
+      <td>0.006733</td>
+      <td>0.006658</td>
+      <td>1.011316</td>
+      <td>0.313286</td>
+      <td>-0.006408</td>
+      <td>0.019874</td>
     </tr>
     <tr>
       <th>aged_65_older</th>
-      <td>-5.910733e-03</td>
-      <td>7.610942e-03</td>
-      <td>-0.776610</td>
-      <td>0.438280</td>
-      <td>-2.091606e-02</td>
-      <td>9.094594e-03</td>
+      <td>0.005374</td>
+      <td>0.009466</td>
+      <td>0.567756</td>
+      <td>0.570941</td>
+      <td>-0.013310</td>
+      <td>0.024059</td>
     </tr>
   </tbody>
 </table>
@@ -282,7 +581,8 @@ LRresult
 
 
 ```python
-reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp + gini + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
+#Significant without either median age or aged_65_older (negative both cases)
+reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp_percap + percap_domestic_health_expenditure + median_age + aged_65_older', df_2020).fit()
 ```
 
 
@@ -323,66 +623,57 @@ LRresult
   <tbody>
     <tr>
       <th>Intercept</th>
-      <td>3.415484e-01</td>
-      <td>7.724160e-02</td>
-      <td>4.421820</td>
-      <td>0.000016</td>
-      <td>1.892630e-01</td>
-      <td>4.938339e-01</td>
+      <td>3.204529e-01</td>
+      <td>0.106300</td>
+      <td>3.014622</td>
+      <td>0.003063</td>
+      <td>0.110266</td>
+      <td>0.530639</td>
     </tr>
     <tr>
       <th>transparency_index</th>
-      <td>1.954371e-01</td>
-      <td>4.419834e-02</td>
-      <td>4.421820</td>
-      <td>0.000016</td>
-      <td>1.082980e-01</td>
-      <td>2.825761e-01</td>
+      <td>-1.264424e-01</td>
+      <td>0.070727</td>
+      <td>-1.787757</td>
+      <td>0.076010</td>
+      <td>-0.266291</td>
+      <td>0.013406</td>
     </tr>
     <tr>
-      <th>gdp</th>
-      <td>2.006482e-14</td>
-      <td>6.184335e-15</td>
-      <td>3.244459</td>
-      <td>0.001373</td>
-      <td>7.872116e-15</td>
-      <td>3.225753e-14</td>
-    </tr>
-    <tr>
-      <th>gini</th>
-      <td>-1.958582e-03</td>
-      <td>1.829483e-03</td>
-      <td>-1.070566</td>
-      <td>0.285617</td>
-      <td>-5.565493e-03</td>
-      <td>1.648328e-03</td>
+      <th>gdp_percap</th>
+      <td>-8.706109e-07</td>
+      <td>0.000002</td>
+      <td>-0.519559</td>
+      <td>0.604203</td>
+      <td>-0.000004</td>
+      <td>0.000002</td>
     </tr>
     <tr>
       <th>percap_domestic_health_expenditure</th>
-      <td>-5.795900e-05</td>
-      <td>1.178184e-05</td>
-      <td>-4.919351</td>
-      <td>0.000002</td>
-      <td>-8.118744e-05</td>
-      <td>-3.473055e-05</td>
+      <td>-4.469910e-05</td>
+      <td>0.000025</td>
+      <td>-1.790454</td>
+      <td>0.075573</td>
+      <td>-0.000094</td>
+      <td>0.000005</td>
     </tr>
     <tr>
       <th>median_age</th>
-      <td>2.672412e-03</td>
-      <td>3.086091e-03</td>
-      <td>0.865954</td>
-      <td>0.387523</td>
-      <td>-3.411961e-03</td>
-      <td>8.756785e-03</td>
+      <td>8.245122e-03</td>
+      <td>0.005779</td>
+      <td>1.426704</td>
+      <td>0.155924</td>
+      <td>-0.003182</td>
+      <td>0.019672</td>
     </tr>
     <tr>
       <th>aged_65_older</th>
-      <td>-8.849708e-03</td>
-      <td>4.880816e-03</td>
-      <td>-1.813162</td>
-      <td>0.071262</td>
-      <td>-1.847246e-02</td>
-      <td>7.730480e-04</td>
+      <td>-1.144379e-02</td>
+      <td>0.008383</td>
+      <td>-1.365086</td>
+      <td>0.174447</td>
+      <td>-0.028020</td>
+      <td>0.005132</td>
     </tr>
   </tbody>
 </table>
