@@ -1,4 +1,4 @@
-country_standard,gdp,gini,gdp_percap,gdp_percap_ppp,percap_domestic_health_expenditure,percap_domestic_health_expenditure_ppp,median_age,aged_65_older
+country_standard,gdp,gini,gdp_percap,gdp_percap_ppp_covid,percap_domestic_health_expenditure,percap_domestic_health_expenditure_ppp,median_age,aged_65_older
 Afghanistan,19291104007.8299,NA,507.103431871987,2156.41948202725,2.57800722,9.64153671,18.6,2.581
 Albania,15279183289.9372,33.2,5353.2448564014,14648.2674019058,148.43656921,376.50137329,38,13.188
 Algeria,171091289782.245,27.6,3973.96407191565,12019.9283559331,168.44966125,633.79882813,29.1,6.211
