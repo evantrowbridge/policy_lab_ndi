@@ -968,6 +968,7 @@ countries_in_trust_index <- df_trust_index %>% filter(!is.na(trust_index)) %>% s
 
 skim(df_trust_index)
 histogram(df_trust_index$trust_index)
+
 ```
 
 # Corruption index
@@ -1144,7 +1145,7 @@ df_indices_controls <- df_indices_controls %>%
   select(country_standard, year, everything(), -starts_with('incomplete')) %>%
   mutate(across(where(is.numeric), ~ case_when(!is.nan(.x) ~ .x)))
 
-skim(df_indices_controls)
+#skim(df_indices_controls)
 
 write_csv(df_indices_controls, "data/indices_and_controls.csv")
 
@@ -1154,6 +1155,36 @@ df_indices_mean <- df_indices_controls %>%
   summarise(across(transparency_index:covid_index, ~mean(.x, na.rm = TRUE), .names = "mean_{.col}"))
   
 write_csv(df_indices_mean, "data/country_average_indices.csv")
+
+# Creating index for cross-section data set for regressions
+
+df_indices_controls_cross_section <- df_indices_controls %>% 
+  filter(year<2020) %>% # There is no transparency index data in 2020
+  select(country_standard:transparency_index, pandemic_dem_violation_index:aged_65_older) %>%
+  # Removing rows with all NA values for pandemic violations index or covid index
+  filter(
+    if_any(
+      pandemic_dem_violation_index:covid_index, 
+      ~ !is.na(.))) %>%
+  group_by(country_standard) %>%
+  mutate(
+    transparency_index_mean = mean(transparency_index, na.rm = TRUE)) %>%
+  ungroup() %>%
+  arrange(country_standard, year) %>%
+  group_by(country_standard) %>%
+  # We'll be keeping only 2019 data, and if the transprency index is missing 
+  #   that year, it'll be filled in with the most recent available value
+  fill(transparency_index) %>%
+  ungroup() %>%
+  rename(transparency_index_2019 = transparency_index) %>%
+  filter(year==2019) %>%
+  select(country_standard, transparency_index_2019, transparency_index_mean, 
+           pandemic_dem_violation_index:aged_65_older) %>%
+  distinct()
+
+#df_indices_controls_cross_section %>% skim()    
+
+write_csv(df_indices_controls_cross_section, "data/indices_and_controls_cross_section.csv")
 
 ```
 
