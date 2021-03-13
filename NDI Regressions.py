@@ -16,7 +16,9 @@ import statsmodels.formula.api as smf
 
 
 path = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls.csv'
+path2 = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls_cross_section.csv'
 ndi_df = pd.read_csv(path)
+covid_df = pd.read_csv(path2)
 
 
 # In[3]:
@@ -25,7 +27,7 @@ ndi_df = pd.read_csv(path)
 ndi_df
 
 
-# In[24]:
+# In[4]:
 
 
 #Transparency without covid models
@@ -98,74 +100,48 @@ for value in values:
     tables.append(LRresult)
 
 
-# In[13]:
+# In[37]:
 
 
 #Call on tables to show all of them or by index: tables[i] 
-tables[5]
+tables[0]
 
 
 # In[14]:
 
 
-#Select years greater than 2018 for next two models 
-df_2020 = ndi_df.loc[ndi_df['year'] > 2018]
-
-
-# In[15]:
-
-
-df_2020
-
-
-# In[16]:
-
-
-#Fill NA values with previous year
-df_2020['transparency_index'].fillna(method='ffill', inplace=True)
-
-
-# In[17]:
-
-
-#Keep only 2020
-df_2020 = df_2020.loc[df_2020['year'] == 2020]
+#COVID Models
+covid_df
 
 
 # In[18]:
 
 
-df_2020
+#pp = sns.pairplot(data = covid_df, vars=['transparency_index_2019', 'pandemic_dem_violation_index', 'covid_index', 'gdp_percap', 'gdp_percap_ppp_covid', 'percap_domestic_health_expenditure_ppp']) 
 
 
-# In[25]:
+# In[52]:
 
 
-pp = sns.pairplot(data = df_2020, vars=['pandemic_dem_violation_index', 'covid_index', 'gdp_percap', 'gdp_percap_ppp_covid', 'percap_domestic_health_expenditure_ppp']) 
+#COVID
+reg_covid = smf.ols('covid_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + median_age + aged_65_older', covid_df).fit()
 
 
-# In[20]:
-
-
-#COVID outcomes model Not significant (significant without age controls) 
-reg_covid = smf.ols('covid_index ~ transparency_index +  gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + median_age + aged_65_older', df_2020).fit()
-
-
-# In[21]:
+# In[53]:
 
 
 LRresult = reg_covid.summary2().tables[1]
 LRresult
 
 
+# In[21]:
+
+
+#Pandemic Democracy Violations
+reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + aged_65_older + median_age', covid_df).fit()
+
+
 # In[22]:
-
-
-#Significant and positive (negative without gdp and health) more to explore here 
-reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + aged_65_older + median_age', df_2020).fit()
-
-
-# In[23]:
 
 
 LRresult = reg_pandemic_violations.summary2().tables[1]
