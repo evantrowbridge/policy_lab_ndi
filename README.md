@@ -1,8 +1,18 @@
 # policy_lab_ndi
 
-GitHub for Sharing NDI Code
+## Notes on Code:
+
+The script for cleaning and organizing data is: "ndi_analysis.Rmd"
+
+The script for running regressions is: "NDI Regressions.ipynb"
 
 ## Notes on Data:
+
+The panel data of the indices is located in the "data" folder, in a file named indices_and_controls.csv
+
+The cross-sectional data (for Covid-19 related analysis) is located in the "data" folder, in a file named indices_and_controls_cross_section.csv
+
+### Data used to create indices and perform analysis:
 
 The files listed below are located in the Data folder
 
@@ -35,20 +45,54 @@ The files listed below are located in the Data folder
 
     -   Open Government Partnership Report data (2019) <https://docs.google.com/spreadsheets/d/10NlwZZSGaJnRRZf0OD5ZsAmjYFDAhhUxXd88fMi32qY/edit#gid=261093125>
 
--   GDP_data.xlsx
-
-    -   World Bank Data <https://data.worldbank.org/indicator/NY.GDP.MKTP.CD>
-
--   CPI_Transparency_International.xlsx
+-   CPI_Transparency_International_rev.xlsx
 
     -   This comes from Trensparency International's [Corruption Perceptions Index](https://www.transparency.org/en/cpi/2020/index/nzl).
-    -   We multiplied each score beteween 2006 and 2012 by 10 to make it in 0-100 scale as same as after 2013.
+    -   We multiplied each score between 2006 and 2012 by 10 to make it in 0-100 scale as same as after 2013.
 
--   Gini_coefficient_2020.csv
+-   Worldwide_Governance_Indicators_clean.csv
 
-    -   Gives each country's Gini index for the year 2020
+    -   This comes from the [Worldwide_Governance_Indicators](https://info.worldbank.org/governance/wgi/).
+    -   We merge data of two indicators (Voice and Accountability and Control of Corruption) into a single data set.
 
-    -   add info (the source and a link)?
+-   wgi_gov_effective.xlsx
+
+    -   "Government Effectiveness" combines into a single grouping responses on the quality of public service provision, the quality of the bureaucracy, the competence of civil servants, the independence of the civil service from political pressures, and the credibility of the government's commitment to policies. The main focus of this index is on "inputs" required for the government to be able to produce and implement good policies and deliver public goods.
+    -   Years: 1995-2018
+    -   This comes from the [World Bank's Worldwide Governance Indicators (WGI)](http://info.worldbank.org/governance/wgi/).
+
+-   Vdem_account_transp_corrupt.csv
+
+    -   
+
+-   PanDem_ts_V5.csv
+
+    -   This data comes from V-Dem's ["Pandemic Backsliding" project](https://www.v-dem.net/en/our-work/research-projects/pandemic-backsliding/)
+
+    -   The data was downloaded from [V-Dem's GitHub page](https://github.com/vdeminstitute/pandem)
+
+-   Freedom_house.xlsx
+
+    -   This data comes from Freedom House's [Freedom in the World](https://freedomhouse.org/report/freedom-world)
+    -   We downloaded "Aggregate Category and Subcategory Scores, 2003-2021" and converted status into 0 (Not Free), 0.5 (Partly Free), and 1 (Free)
+
+-   WVS_TimeSeries_R\_v1_6.rds
+
+    -   This data comes from the World Values Survey
+
+    -   The data was downloaded from [WVS Database (worldvaluessurvey.org)](https://www.worldvaluessurvey.org/WVSDocumentationWVL.jsp)
+
+-   The R package "WDI" is used to access updated data from the World Bank, specifically
+
+    -   Public Health Expenditure Per Capita
+
+    -   GDP
+
+    -   GDP Per Capita
+
+    -   Gini Coefficient
+
+### Additional Data that is imported but not included in current analysis
 
 -   Africa_Integrity_Indictors_CLEAN_22021.xlsx
 
@@ -75,44 +119,9 @@ The files listed below are located in the Data folder
             -   In law, civil servants who report cases of corruption are protected from recrimination or other negative consequences.
             -   In law, there is an independent body/bodies mandated to receive and investigate cases of alleged public sector corruption.
 
--   WB_Public_Health_Expenditure_v3.csv
-
-    -   World Health Organization Global Health Expenditure Database
-    -   <https://data.worldbank.org/indicator/SH.XPD.GHED.PC.CD>
-
--   Worldwide_Governance_Indicators_clean.csv
-
-    -   This comes from the [Worldwide_Governance_Indicators](https://info.worldbank.org/governance/wgi/).
-    -   We merge data of two indicators (Voice and Accountability and Control of Corruption) into a single data set.
-
--   wgi_gov_effective.xlsx
-
-    -   This comes from the [Worldwide_Governance_Indicators](https://info.worldbank.org/governance/wgi/).
-
-    -   It includes the Government Effectiveness index scores
-
 -   vdem_clean.csv
 
     -   This comes from the [V-Dem Dataset - Version 10](https://www.v-dem.net/en/data/data/v-dem-dataset/).
     -   We downloaded "Country-Year: V-Dem Core" data and merged three indicators (v2x_libdem: Liberal democracy index), v2x_partipdem: Participatory democracy index, v2x_cspart: Civil society participation index)
     -   This data goes back many years. We include data starting in 2006
     -   Version 11 was uploaded [here](https://www.v-dem.net/en/data/data/v-dem-dataset-v11/). Next team can update our analysis using this version.
-
--   PanDem_ts_V5.csv
-
-    -   This data comes from V-Dem's ["Pandemic Backsliding" project](https://www.v-dem.net/en/our-work/research-projects/pandemic-backsliding/)
-
-    -   The data was downloaded from [V-Dem's GitHub page](https://github.com/vdeminstitute/pandem)
-
--   Freedom_house.xlsx
-
-    -   This data comes from Freedom House's [Freedom in the World](https://freedomhouse.org/report/freedom-world)
-    -   We downloaded "Aggregate Category and Subcategory Scores, 2003-2021" and converted status into 0 (Not Free), 0.5 (Partly Free), and 1 (Free)
-
--   wgi_gov_effective.xlsx
-
-    -   "Government Effectiveness" combines into a single grouping responses on the quality of public service provision, the quality of the bureaucracy, the competence of civil servants, the independence of the civil service from political pressures, and the credibility of the government's commitment to policies. The main focus of this index is on "inputs" required for the government to be able to produce and implement good policies and deliver public goods.
-    -   Years:1995-2018
-    -   This comes from the [World Bank's Worldwide Governance Indicators (WGI)](http://info.worldbank.org/governance/wgi/).
-
--   WVS_TimeSeries_R\_v1_6.rds
