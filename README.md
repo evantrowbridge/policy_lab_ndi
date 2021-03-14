@@ -63,7 +63,31 @@ The files listed below are located in the Data folder
 
 -   Vdem_account_transp_corrupt.csv
 
-    -   
+    - This data comes from the V-Dem data set
+    - Variables
+    1. transparent_laws: "Are the laws of the land clear, well publicized, coherent (consistent with each other), relatively stable from year to year, and enforced in a predictable manner?" (Ordinal, 0-10)
+    2. accountability_index: "To what extent is the ideal of government accountability achieved?"
+    - "Government accountability is understood as constraints on the government’s use of political power through requirements for     justification for its actions and potential sanctions. We organize the sub-types of accountability spatially. "
+    
+    3. vertical_index: "To what extent is the ideal of vertical government accountability achieved?"
+    - " Vertical accountability captures the extent to which citizens have the power to hold the government accountable. The mechanisms of vertical accountability include formal political participation on part of the citizens — such as being able to freely organize in political parties — and participate in free and fair elections, including for the chief executive."
+    
+    4. diagonal_index: "To what extent is the ideal of diagonal government accountability achieved?"
+    - "Diagonal accountability covers the range of actions and mechanisms that citizens, civil society organizations CSOs, and an independent media can use to hold the government accountable. These mechanisms include using informal tools such as social mobilization and investigative journalism to enhance vertical and horizontal accountability."
+    
+    5. horizontal_index - "To what extent is the ideal of horizontal government accountability achieved?"
+    - "Horizontal accountability concerns the power of state institutions to oversee the government by demanding information, questioning officials and punishing improper behavior. This form of accountability ensures checks between institutions and prevents the abuse of power. The key agents in horizontal government accountability are: the legislature; the judiciary; and specific oversight agencies such as ombudsmen, prosecutor and comptroller generals."
+    
+  
+    6. corruption_index: Political Corruption Index, "How pervasive is political corruption?"
+    "The directionality of the V-Dem corruption index runs from less corrupt to more corrupt unlike the other V-Dem variables that generally run from less democratic to more democratic situation."
+    
+    7. exec_corruption: Executive Corruption Index, "How routinely do members of the executive, or their agents grant favors in exchange for bribes, kickbacks, or other material inducements, and how often do they steal, embezzle, or misappropriate public funds or other state resources for personal or family use?"
+    
+    8. public_sector_corruption: Public Sector Corruption Index, "To what extent do public sector employees grant favors in exchange for bribes, kickbacks, or other material inducements, and how often do they steal, embezzle, or misappropriate public funds or other state resources for personal or family use?"
+
+    
+    
 
 -   PanDem_ts_V5.csv
 
