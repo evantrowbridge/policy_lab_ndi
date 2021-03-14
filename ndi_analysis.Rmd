@@ -1160,11 +1160,11 @@ write_csv(df_indices_mean, "data/country_average_indices.csv")
 
 df_indices_controls_cross_section <- df_indices_controls %>% 
   filter(year<2020) %>% # There is no transparency index data in 2020
-  select(country_standard:transparency_index, pandemic_dem_violation_index:aged_65_older) %>%
+  select(country_standard:transparency_index, budget_participation_index:aged_65_older) %>%
   # Removing rows with all NA values for pandemic violations index or covid index
   filter(
     if_any(
-      pandemic_dem_violation_index:covid_index, 
+      budget_participation_index:covid_index, 
       ~ !is.na(.))) %>%
   group_by(country_standard) %>%
   mutate(
@@ -1179,7 +1179,7 @@ df_indices_controls_cross_section <- df_indices_controls %>%
   rename(transparency_index_2019 = transparency_index) %>%
   filter(year==2019) %>%
   select(country_standard, transparency_index_2019, transparency_index_mean, 
-           pandemic_dem_violation_index:aged_65_older) %>%
+           budget_participation_index:aged_65_older) %>%
   distinct()
 
 #df_indices_controls_cross_section %>% skim()    
