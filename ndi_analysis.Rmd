@@ -868,6 +868,7 @@ df_budget_transparency_index <- df_all_yr %>%
   filter(!is.na(country_standard)) %>%
   distinct() %>%
   mutate(
+    ogp_transparency_fisc_open_noNA = ogp_transparency_fisc_open,
     ogp_transparency_fisc_open = ifelse(
       is.na(ogp_transparency_fisc_open),
       0,
@@ -876,12 +877,18 @@ df_budget_transparency_index <- df_all_yr %>%
       ogp_transparency_fisc_open==0,
       TRUE,
       FALSE),
-    budget_transparency_index = rescale(ogp_transparency_fisc_open)) %>%
+    budget_transparency_index = rescale(ogp_transparency_fisc_open),
+    budget_transparency_index_noNA = rescale(ogp_transparency_fisc_open_noNA)) %>%
   select(country_standard, budget_transparency_index, everything()) %>%
   arrange(country_standard)
 
 skim(df_budget_transparency_index)
 histogram(df_budget_transparency_index$budget_transparency_index)
+histogram(df_budget_transparency_index$budget_transparency_index_noNA)
+
+df_budget_transparency_index %>% count(budget_transparency_index)
+df_budget_transparency_index %>% count(budget_transparency_index_noNA)
+
 ```
 
 # Accountability Index
@@ -1072,6 +1079,7 @@ df_budget_particpation_index <- df_all_yr %>%
   filter(!is.na(country_standard)) %>%
   distinct() %>%
   mutate(
+    ogp_participation_fisc_open_noNA = ogp_participation_fisc_open,
     ogp_participation_fisc_open = ifelse(
       is.na(ogp_participation_fisc_open),
       0,
@@ -1080,12 +1088,17 @@ df_budget_particpation_index <- df_all_yr %>%
       ogp_participation_fisc_open==0,
       TRUE,
       FALSE),
-    budget_participation_index = rescale(ogp_participation_fisc_open)) %>%
-  select(country_standard, budget_participation_index, everything()) %>%
+    budget_participation_index = rescale(ogp_participation_fisc_open),
+    budget_participation_index_noNA = rescale(ogp_participation_fisc_open_noNA)) %>%
+  select(country_standard, budget_participation_index, budget_participation_index_noNA, everything()) %>%
   arrange(country_standard)
 
 skim(df_budget_particpation_index)
 histogram(df_budget_particpation_index$budget_participation_index)
+histogram(df_budget_particpation_index$budget_participation_index_noNA)
+
+df_budget_particpation_index %>% count(budget_participation_index)
+df_budget_particpation_index %>% count(budget_participation_index_noNA)
 
 ```
 
@@ -1123,8 +1136,8 @@ df_indices_controls <- df_transparency_index %>%
   full_join(df_trust_index[ , c("country_standard", "year", "trust_index", "incomplete_trust_index")], by = c("country_standard", "year")) %>%
   full_join(df_corruption_index[ , c("country_standard", "year", "corruption_index", "incomplete_corrupt_index")], by = c("country_standard", "year")) %>%
   full_join(df_effectiveness_index[ , c("country_standard", "year", "effectiveness_index", "incomplete_effect_index")], by = c("country_standard", "year")) %>%
-  full_join(df_budget_particpation_index[ , c("country_standard", "budget_participation_index", "incomplete_bdgt_part_index")], by = "country_standard") %>%
-  full_join(df_budget_transparency_index[ , c("country_standard", "budget_transparency_index", "incomplete_bdgt_trans_index")], by = "country_standard") %>%
+  full_join(df_budget_particpation_index[ , c("country_standard", "budget_participation_index", "budget_participation_index_noNA", "incomplete_bdgt_part_index")], by = "country_standard") %>%
+  full_join(df_budget_transparency_index[ , c("country_standard", "budget_transparency_index", "budget_transparency_index_noNA", "incomplete_bdgt_trans_index")], by = "country_standard") %>%
   full_join(df_pandem_dem_violation_index[ , c("country_standard", "pandemic_dem_violation_index", "incomplete_dem_vio_index")], by = "country_standard") %>%
   full_join(df_covid_index[ , c("country_standard", "covid_index", 'incomplete_covid_index')], by = "country_standard") %>%
   full_join(df_controls, by = "country_standard") %>%
@@ -1155,6 +1168,7 @@ df_indices_mean <- df_indices_controls %>%
   summarise(across(transparency_index:covid_index, ~mean(.x, na.rm = TRUE), .names = "mean_{.col}"))
   
 write_csv(df_indices_mean, "data/country_average_indices.csv")
+
 
 # Creating index for cross-section data set for regressions
 
