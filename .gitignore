@@ -14,6 +14,7 @@ data/WVS_TimeSeries_R_v1_6.rds
 policy_lab_ndi.Rproj
 NDI*Regressions.md
 NDI*Regressions.py
+.ipynb_checkpoints
 
 # Example code in package build process
 *-Ex.R
