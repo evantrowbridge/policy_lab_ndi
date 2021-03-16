@@ -1,10 +1,12 @@
-# policy_lab_ndi
+# Harris Policy Lab Spring 2021: NDI Team
 
 ## Notes on Code:
 
-The script for cleaning and organizing data is: "ndi_analysis.Rmd"
+The script for cleaning and organizing data is: "data_preparation.Rmd"
 
 The script for running regressions is: "NDI Regressions.ipynb"
+
+The script for creating plots is: "plotting.R"
 
 ## Notes on Data:
 
