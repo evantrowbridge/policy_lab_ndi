@@ -18,7 +18,7 @@ import statsmodels.formula.api as smf
 path = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls.csv'
 path2 = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls_cross_section.csv'
 ndi_df = pd.read_csv(path)
-covid_df = pd.read_csv(path2)
+nonpanel_df = pd.read_csv(path2)
 
 
 # In[3]:
@@ -76,80 +76,83 @@ reg_effectiveness = smf.ols('effectiveness_index ~ transparency_index + gdp_perc
 
 
 #Budget Participation
-budget_particip = ndi_df.loc[:,['budget_participation_index', 'transparency_index', 'gdp_percap_ppp', 'country_standard']].dropna(how='any')
-reg_bugetparticipation = smf.ols('budget_participation_index ~ transparency_index + gdp_percap_ppp + C(country_standard)', budget_particip).fit(cov_type='cluster', cov_kwds={'groups': budget_particip['country_standard']})
+reg_budgetparticipation = smf.ols('budget_participation_index ~ transparency_index_2019 + gdp_percap_ppp_covid', nonpanel_df).fit()
 
 
 # In[11]:
 
 
-#Budget Transparency
-budget_transp = ndi_df.loc[:,['budget_transparency_index', 'transparency_index', 'gdp_percap_ppp', 'country_standard']].dropna(how='any')
-reg_buget_transparency = smf.ols('budget_transparency_index ~ transparency_index + gdp_percap_ppp + C(country_standard)', budget_transp).fit(cov_type='cluster', cov_kwds={'groups': budget_transp['country_standard']})
+print(reg_budgetparticipation.summary())
 
 
 # In[12]:
 
 
-tables = []
-values = [reg_accountability, reg_corruption, reg_trust, reg_effectiveness, reg_bugetparticipation, reg_buget_transparency]
-for value in values:
-    LRresult = value.summary2().tables[1]
-    some_values = ['Intercept', 'transparency_index', 'gdp_percap_ppp']
-    LRresult = LRresult.loc[LRresult.index.isin(some_values)]#.style.apply(highlight_1, axis=1)
-    tables.append(LRresult)
+#Budget Transparency
+reg_budget_transparency = smf.ols('budget_transparency_index ~ transparency_index_2019 + gdp_percap_ppp_covid', nonpanel_df).fit()
 
 
-# In[37]:
+# In[13]:
 
 
-#Call on tables to show all of them or by index: tables[i] 
-tables[0]
+print(reg_budget_transparency.summary())
 
 
 # In[14]:
 
 
+tables = []
+values = [reg_accountability, reg_corruption, reg_trust, reg_effectiveness]
+for value in values:
+    LRresult = value.summary2().tables[1]
+    some_values = ['Intercept', 'transparency_index', 'gdp_percap_ppp', 'gdp_percap_ppp_covid', 'transparency_index_2019']
+    LRresult = LRresult.loc[LRresult.index.isin(some_values)]#.style.apply(highlight_1, axis=1)
+    tables.append(LRresult)
+
+
+# In[25]:
+
+
+#Call on tables to show all of them or by index: tables[i] 
+tables[3]
+
+
+# In[26]:
+
+
 #COVID Models
-covid_df
+nonpanel_df
 
 
-# In[18]:
+# In[27]:
 
 
-#pp = sns.pairplot(data = covid_df, vars=['transparency_index_2019', 'pandemic_dem_violation_index', 'covid_index', 'gdp_percap', 'gdp_percap_ppp_covid', 'percap_domestic_health_expenditure_ppp']) 
+#Pairplot COVID variables
+#pairplot2 = sns.pairplot(data = covid_df, vars=['transparency_index_2019', 'pandemic_dem_violation_index', 'covid_index', 'gdp_percap', 'gdp_percap_ppp_covid', 'percap_domestic_health_expenditure_ppp']) 
 
 
-# In[52]:
+# In[28]:
 
 
 #COVID
-reg_covid = smf.ols('covid_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + median_age + aged_65_older', covid_df).fit()
+reg_covid = smf.ols('covid_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + median_age + aged_65_older', nonpanel_df).fit()
 
 
-# In[53]:
+# In[29]:
 
 
-LRresult = reg_covid.summary2().tables[1]
-LRresult
+print(reg_covid.summary())
 
 
-# In[21]:
+# In[31]:
 
 
 #Pandemic Democracy Violations
-reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + aged_65_older + median_age', covid_df).fit()
+reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + aged_65_older + median_age', nonpanel_df).fit()
 
 
-# In[22]:
+# In[32]:
 
 
-LRresult = reg_pandemic_violations.summary2().tables[1]
-LRresult
-
-
-# In[ ]:
-
-
-
+print(reg_pandemic_violations.summary())
 

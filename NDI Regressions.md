@@ -12,7 +12,7 @@ import statsmodels.formula.api as smf
 path = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls.csv'
 path2 = r'/Users/katiacordoba/Documents/GitHub/policy_lab_ndi/data/indices_and_controls_cross_section.csv'
 ndi_df = pd.read_csv(path)
-covid_df = pd.read_csv(path2)
+nonpanel_df = pd.read_csv(path2)
 ```
 
 
@@ -49,8 +49,9 @@ ndi_df
       <th>corruption_index</th>
       <th>effectiveness_index</th>
       <th>budget_participation_index</th>
+      <th>budget_participation_index_noNA</th>
       <th>budget_transparency_index</th>
-      <th>pandemic_dem_violation_index</th>
+      <th>...</th>
       <th>covid_index</th>
       <th>gdp</th>
       <th>gini</th>
@@ -74,8 +75,9 @@ ndi_df
       <td>0.899492</td>
       <td>0.109936</td>
       <td>1.0</td>
+      <td>1.0</td>
       <td>0.333333</td>
-      <td>0.214286</td>
+      <td>...</td>
       <td>0.013742</td>
       <td>1.929110e+10</td>
       <td>NaN</td>
@@ -97,8 +99,9 @@ ndi_df
       <td>0.910703</td>
       <td>0.133040</td>
       <td>1.0</td>
+      <td>1.0</td>
       <td>0.333333</td>
-      <td>0.214286</td>
+      <td>...</td>
       <td>0.013742</td>
       <td>1.929110e+10</td>
       <td>NaN</td>
@@ -120,8 +123,9 @@ ndi_df
       <td>0.933634</td>
       <td>0.143647</td>
       <td>1.0</td>
+      <td>1.0</td>
       <td>0.333333</td>
-      <td>0.214286</td>
+      <td>...</td>
       <td>0.013742</td>
       <td>1.929110e+10</td>
       <td>NaN</td>
@@ -143,8 +147,9 @@ ndi_df
       <td>0.933071</td>
       <td>0.144919</td>
       <td>1.0</td>
+      <td>1.0</td>
       <td>0.333333</td>
-      <td>0.214286</td>
+      <td>...</td>
       <td>0.013742</td>
       <td>1.929110e+10</td>
       <td>NaN</td>
@@ -166,8 +171,9 @@ ndi_df
       <td>0.939024</td>
       <td>0.147968</td>
       <td>1.0</td>
+      <td>1.0</td>
       <td>0.333333</td>
-      <td>0.214286</td>
+      <td>...</td>
       <td>0.013742</td>
       <td>1.929110e+10</td>
       <td>NaN</td>
@@ -201,6 +207,7 @@ ndi_df
       <td>...</td>
       <td>...</td>
       <td>...</td>
+      <td>...</td>
     </tr>
     <tr>
       <th>3530</th>
@@ -212,8 +219,9 @@ ndi_df
       <td>0.850148</td>
       <td>0.241040</td>
       <td>0.0</td>
+      <td>NaN</td>
       <td>0.000000</td>
-      <td>0.500000</td>
+      <td>...</td>
       <td>0.279450</td>
       <td>2.144076e+10</td>
       <td>44.3</td>
@@ -235,8 +243,9 @@ ndi_df
       <td>0.851687</td>
       <td>0.237870</td>
       <td>0.0</td>
+      <td>NaN</td>
       <td>0.000000</td>
-      <td>0.500000</td>
+      <td>...</td>
       <td>0.279450</td>
       <td>2.144076e+10</td>
       <td>44.3</td>
@@ -258,8 +267,9 @@ ndi_df
       <td>0.847306</td>
       <td>0.236812</td>
       <td>0.0</td>
+      <td>NaN</td>
       <td>0.000000</td>
-      <td>0.500000</td>
+      <td>...</td>
       <td>0.279450</td>
       <td>2.144076e+10</td>
       <td>44.3</td>
@@ -281,8 +291,9 @@ ndi_df
       <td>0.836403</td>
       <td>0.261814</td>
       <td>0.0</td>
+      <td>NaN</td>
       <td>0.000000</td>
-      <td>0.500000</td>
+      <td>...</td>
       <td>0.279450</td>
       <td>2.144076e+10</td>
       <td>44.3</td>
@@ -304,8 +315,9 @@ ndi_df
       <td>NaN</td>
       <td>NaN</td>
       <td>0.0</td>
+      <td>NaN</td>
       <td>0.000000</td>
-      <td>0.500000</td>
+      <td>...</td>
       <td>0.279450</td>
       <td>2.144076e+10</td>
       <td>44.3</td>
@@ -319,7 +331,7 @@ ndi_df
     </tr>
   </tbody>
 </table>
-<p>3535 rows × 20 columns</p>
+<p>3535 rows × 22 columns</p>
 </div>
 
 
@@ -366,24 +378,92 @@ reg_effectiveness = smf.ols('effectiveness_index ~ transparency_index + gdp_perc
 
 ```python
 #Budget Participation
-budget_particip = ndi_df.loc[:,['budget_participation_index', 'transparency_index', 'gdp_percap_ppp', 'country_standard']].dropna(how='any')
-reg_bugetparticipation = smf.ols('budget_participation_index ~ transparency_index + gdp_percap_ppp + C(country_standard)', budget_particip).fit(cov_type='cluster', cov_kwds={'groups': budget_particip['country_standard']})
+reg_budgetparticipation = smf.ols('budget_participation_index ~ transparency_index_2019 + gdp_percap_ppp_covid', nonpanel_df).fit()
 ```
+
+
+```python
+print(reg_budgetparticipation.summary())
+```
+
+                                    OLS Regression Results                                
+    ======================================================================================
+    Dep. Variable:     budget_participation_index   R-squared:                       0.060
+    Model:                                    OLS   Adj. R-squared:                  0.050
+    Method:                         Least Squares   F-statistic:                     6.035
+    Date:                        Mon, 15 Mar 2021   Prob (F-statistic):            0.00288
+    Time:                                21:40:23   Log-Likelihood:                -65.897
+    No. Observations:                         193   AIC:                             137.8
+    Df Residuals:                             190   BIC:                             147.6
+    Df Model:                                   2                                         
+    Covariance Type:                    nonrobust                                         
+    ===========================================================================================
+                                  coef    std err          t      P>|t|      [0.025      0.975]
+    -------------------------------------------------------------------------------------------
+    Intercept                   0.0572      0.052      1.092      0.276      -0.046       0.161
+    transparency_index_2019     0.2825      0.085      3.330      0.001       0.115       0.450
+    gdp_percap_ppp_covid    -3.902e-07   1.22e-06     -0.321      0.749   -2.79e-06    2.01e-06
+    ==============================================================================
+    Omnibus:                       34.953   Durbin-Watson:                   1.907
+    Prob(Omnibus):                  0.000   Jarque-Bera (JB):               48.826
+    Skew:                           1.222   Prob(JB):                     2.50e-11
+    Kurtosis:                       3.310   Cond. No.                     1.18e+05
+    ==============================================================================
+    
+    Warnings:
+    [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+    [2] The condition number is large, 1.18e+05. This might indicate that there are
+    strong multicollinearity or other numerical problems.
+
 
 
 ```python
 #Budget Transparency
-budget_transp = ndi_df.loc[:,['budget_transparency_index', 'transparency_index', 'gdp_percap_ppp', 'country_standard']].dropna(how='any')
-reg_buget_transparency = smf.ols('budget_transparency_index ~ transparency_index + gdp_percap_ppp + C(country_standard)', budget_transp).fit(cov_type='cluster', cov_kwds={'groups': budget_transp['country_standard']})
+reg_budget_transparency = smf.ols('budget_transparency_index ~ transparency_index_2019 + gdp_percap_ppp_covid', nonpanel_df).fit()
 ```
 
 
 ```python
+print(reg_budget_transparency.summary())
+```
+
+                                    OLS Regression Results                               
+    =====================================================================================
+    Dep. Variable:     budget_transparency_index   R-squared:                       0.150
+    Model:                                   OLS   Adj. R-squared:                  0.141
+    Method:                        Least Squares   F-statistic:                     16.70
+    Date:                       Mon, 15 Mar 2021   Prob (F-statistic):           2.08e-07
+    Time:                               21:40:23   Log-Likelihood:                -51.756
+    No. Observations:                        193   AIC:                             109.5
+    Df Residuals:                            190   BIC:                             119.3
+    Df Model:                                  2                                         
+    Covariance Type:                   nonrobust                                         
+    ===========================================================================================
+                                  coef    std err          t      P>|t|      [0.025      0.975]
+    -------------------------------------------------------------------------------------------
+    Intercept                  -0.0065      0.049     -0.134      0.894      -0.103       0.090
+    transparency_index_2019     0.3805      0.079      4.826      0.000       0.225       0.536
+    gdp_percap_ppp_covid     1.302e-06   1.13e-06      1.152      0.251   -9.27e-07    3.53e-06
+    ==============================================================================
+    Omnibus:                       24.915   Durbin-Watson:                   1.992
+    Prob(Omnibus):                  0.000   Jarque-Bera (JB):               15.321
+    Skew:                           0.548   Prob(JB):                     0.000471
+    Kurtosis:                       2.162   Cond. No.                     1.18e+05
+    ==============================================================================
+    
+    Warnings:
+    [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+    [2] The condition number is large, 1.18e+05. This might indicate that there are
+    strong multicollinearity or other numerical problems.
+
+
+
+```python
 tables = []
-values = [reg_accountability, reg_corruption, reg_trust, reg_effectiveness, reg_bugetparticipation, reg_buget_transparency]
+values = [reg_accountability, reg_corruption, reg_trust, reg_effectiveness]
 for value in values:
     LRresult = value.summary2().tables[1]
-    some_values = ['Intercept', 'transparency_index', 'gdp_percap_ppp']
+    some_values = ['Intercept', 'transparency_index', 'gdp_percap_ppp', 'gdp_percap_ppp_covid', 'transparency_index_2019']
     LRresult = LRresult.loc[LRresult.index.isin(some_values)]#.style.apply(highlight_1, axis=1)
     tables.append(LRresult)
 ```
@@ -396,16 +476,12 @@ for value in values:
       'rank is %d' % (J, J_), ValueWarning)
     /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 189, but rank is 2
       'rank is %d' % (J, J_), ValueWarning)
-    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 191, but rank is 190
-      'rank is %d' % (J, J_), ValueWarning)
-    /Users/katiacordoba/opt/anaconda3/lib/python3.7/site-packages/statsmodels/base/model.py:1832: ValueWarning: covariance of constraints does not have full rank. The number of constraints is 191, but rank is 190
-      'rank is %d' % (J, J_), ValueWarning)
 
 
 
 ```python
 #Call on tables to show all of them or by index: tables[i] 
-tables[0]
+tables[3]
 ```
 
 
@@ -440,30 +516,30 @@ tables[0]
   <tbody>
     <tr>
       <th>Intercept</th>
-      <td>0.576651</td>
-      <td>1.345239e-02</td>
-      <td>42.866080</td>
-      <td>0.000000</td>
-      <td>0.550285</td>
-      <td>6.030175e-01</td>
+      <td>1.345998e-01</td>
+      <td>5.207374e-03</td>
+      <td>25.847929</td>
+      <td>2.567082e-147</td>
+      <td>1.243936e-01</td>
+      <td>1.448061e-01</td>
     </tr>
     <tr>
       <th>transparency_index</th>
-      <td>0.257076</td>
-      <td>6.841921e-02</td>
-      <td>3.757367</td>
-      <td>0.000172</td>
-      <td>0.122977</td>
-      <td>3.911752e-01</td>
+      <td>1.064131e-01</td>
+      <td>2.629020e-02</td>
+      <td>4.047633</td>
+      <td>5.173817e-05</td>
+      <td>5.488525e-02</td>
+      <td>1.579410e-01</td>
     </tr>
     <tr>
       <th>gdp_percap_ppp</th>
-      <td>-0.000001</td>
-      <td>4.914317e-07</td>
-      <td>-2.287029</td>
-      <td>0.022194</td>
-      <td>-0.000002</td>
-      <td>-1.607299e-07</td>
+      <td>-1.431830e-07</td>
+      <td>3.177727e-07</td>
+      <td>-0.450583</td>
+      <td>6.522902e-01</td>
+      <td>-7.660061e-07</td>
+      <td>4.796401e-07</td>
     </tr>
   </tbody>
 </table>
@@ -474,7 +550,7 @@ tables[0]
 
 ```python
 #COVID Models
-covid_df
+nonpanel_df
 ```
 
 
@@ -501,6 +577,10 @@ covid_df
       <th>country_standard</th>
       <th>transparency_index_2019</th>
       <th>transparency_index_mean</th>
+      <th>budget_participation_index</th>
+      <th>budget_participation_index_noNA</th>
+      <th>budget_transparency_index</th>
+      <th>budget_transparency_index_noNA</th>
       <th>pandemic_dem_violation_index</th>
       <th>covid_index</th>
       <th>gdp</th>
@@ -519,6 +599,10 @@ covid_df
       <td>Afghanistan</td>
       <td>0.163570</td>
       <td>0.196071</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.333333</td>
+      <td>0.0</td>
       <td>0.214286</td>
       <td>0.013742</td>
       <td>1.929110e+10</td>
@@ -535,6 +619,10 @@ covid_df
       <td>Albania</td>
       <td>0.554243</td>
       <td>0.551349</td>
+      <td>0.5</td>
+      <td>0.0</td>
+      <td>0.666667</td>
+      <td>0.5</td>
       <td>0.357143</td>
       <td>0.540872</td>
       <td>1.527918e+10</td>
@@ -551,6 +639,10 @@ covid_df
       <td>Algeria</td>
       <td>0.157443</td>
       <td>0.169187</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>NaN</td>
       <td>0.428571</td>
       <td>0.011908</td>
       <td>1.710913e+11</td>
@@ -564,9 +656,33 @@ covid_df
     </tr>
     <tr>
       <th>3</th>
+      <td>American Samoa</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.360000e+08</td>
+      <td>NaN</td>
+      <td>11466.690706</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
       <td>Andorra</td>
       <td>0.926096</td>
       <td>0.941675</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>0.919778</td>
       <td>3.154058e+09</td>
@@ -577,22 +693,6 @@ covid_df
       <td>2450.407959</td>
       <td>NaN</td>
       <td>NaN</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Angola</td>
-      <td>0.189579</td>
-      <td>0.149982</td>
-      <td>0.357143</td>
-      <td>0.021043</td>
-      <td>8.881570e+10</td>
-      <td>51.3</td>
-      <td>2790.726615</td>
-      <td>6965.511374</td>
-      <td>36.737221</td>
-      <td>69.060318</td>
-      <td>16.8</td>
-      <td>2.405</td>
     </tr>
     <tr>
       <th>...</th>
@@ -609,28 +709,20 @@ covid_df
       <td>...</td>
       <td>...</td>
       <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
     </tr>
     <tr>
-      <th>181</th>
-      <td>Venezuela</td>
-      <td>0.111563</td>
-      <td>0.358687</td>
-      <td>0.928571</td>
-      <td>0.011356</td>
-      <td>4.823593e+11</td>
-      <td>46.9</td>
-      <td>16054.490513</td>
-      <td>17527.447795</td>
-      <td>122.942413</td>
-      <td>183.498871</td>
-      <td>29.0</td>
-      <td>6.614</td>
-    </tr>
-    <tr>
-      <th>182</th>
+      <th>211</th>
       <td>Vietnam</td>
       <td>0.115130</td>
       <td>0.108154</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>NaN</td>
       <td>0.214286</td>
       <td>0.293488</td>
       <td>2.619212e+11</td>
@@ -643,10 +735,14 @@ covid_df
       <td>7.150</td>
     </tr>
     <tr>
-      <th>183</th>
+      <th>212</th>
       <td>Yemen</td>
       <td>0.067556</td>
       <td>0.181291</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>0.031210</td>
       <td>2.258108e+10</td>
@@ -659,10 +755,14 @@ covid_df
       <td>2.922</td>
     </tr>
     <tr>
-      <th>184</th>
+      <th>213</th>
       <td>Zambia</td>
       <td>0.500186</td>
       <td>0.509566</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>NaN</td>
       <td>0.428571</td>
       <td>0.406037</td>
       <td>2.330977e+10</td>
@@ -675,10 +775,34 @@ covid_df
       <td>2.480</td>
     </tr>
     <tr>
-      <th>185</th>
+      <th>214</th>
+      <td>Zanzibar</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>215</th>
       <td>Zimbabwe</td>
       <td>0.394583</td>
       <td>0.171093</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>NaN</td>
       <td>0.500000</td>
       <td>0.279450</td>
       <td>2.144076e+10</td>
@@ -692,225 +816,101 @@ covid_df
     </tr>
   </tbody>
 </table>
-<p>186 rows × 13 columns</p>
+<p>216 rows × 17 columns</p>
 </div>
 
 
 
 
 ```python
-#pp = sns.pairplot(data = covid_df, vars=['transparency_index_2019', 'pandemic_dem_violation_index', 'covid_index', 'gdp_percap', 'gdp_percap_ppp_covid', 'percap_domestic_health_expenditure_ppp']) 
+#Pairplot COVID variables
+#pairplot2 = sns.pairplot(data = covid_df, vars=['transparency_index_2019', 'pandemic_dem_violation_index', 'covid_index', 'gdp_percap', 'gdp_percap_ppp_covid', 'percap_domestic_health_expenditure_ppp']) 
 ```
-
-
-![png](output_14_0.png)
-
 
 
 ```python
 #COVID
-reg_covid = smf.ols('covid_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + median_age + aged_65_older', covid_df).fit()
+reg_covid = smf.ols('covid_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + median_age + aged_65_older', nonpanel_df).fit()
 ```
 
 
 ```python
-LRresult = reg_covid.summary2().tables[1]
-LRresult
+print(reg_covid.summary())
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Coef.</th>
-      <th>Std.Err.</th>
-      <th>t</th>
-      <th>P&gt;|t|</th>
-      <th>[0.025</th>
-      <th>0.975]</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Intercept</th>
-      <td>-0.079224</td>
-      <td>0.120948</td>
-      <td>-0.655027</td>
-      <td>0.513357</td>
-      <td>-0.318018</td>
-      <td>0.159570</td>
-    </tr>
-    <tr>
-      <th>transparency_index_2019</th>
-      <td>0.068764</td>
-      <td>0.079589</td>
-      <td>0.863986</td>
-      <td>0.388842</td>
-      <td>-0.088373</td>
-      <td>0.225900</td>
-    </tr>
-    <tr>
-      <th>gdp_percap_ppp_covid</th>
-      <td>0.000007</td>
-      <td>0.000002</td>
-      <td>3.246821</td>
-      <td>0.001412</td>
-      <td>0.000003</td>
-      <td>0.000010</td>
-    </tr>
-    <tr>
-      <th>percap_domestic_health_expenditure_ppp</th>
-      <td>-0.000022</td>
-      <td>0.000033</td>
-      <td>-0.668516</td>
-      <td>0.504733</td>
-      <td>-0.000086</td>
-      <td>0.000043</td>
-    </tr>
-    <tr>
-      <th>median_age</th>
-      <td>0.008591</td>
-      <td>0.006241</td>
-      <td>1.376600</td>
-      <td>0.170490</td>
-      <td>-0.003730</td>
-      <td>0.020912</td>
-    </tr>
-    <tr>
-      <th>aged_65_older</th>
-      <td>0.003581</td>
-      <td>0.009110</td>
-      <td>0.393071</td>
-      <td>0.694772</td>
-      <td>-0.014405</td>
-      <td>0.021567</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
+                                OLS Regression Results                            
+    ==============================================================================
+    Dep. Variable:            covid_index   R-squared:                       0.437
+    Model:                            OLS   Adj. R-squared:                  0.420
+    Method:                 Least Squares   F-statistic:                     25.77
+    Date:                Mon, 15 Mar 2021   Prob (F-statistic):           3.39e-19
+    Time:                        21:42:07   Log-Likelihood:                0.61291
+    No. Observations:                 172   AIC:                             10.77
+    Df Residuals:                     166   BIC:                             29.66
+    Df Model:                           5                                         
+    Covariance Type:            nonrobust                                         
+    ==========================================================================================================
+                                                 coef    std err          t      P>|t|      [0.025      0.975]
+    ----------------------------------------------------------------------------------------------------------
+    Intercept                                 -0.0792      0.121     -0.655      0.513      -0.318       0.160
+    transparency_index_2019                    0.0688      0.080      0.864      0.389      -0.088       0.226
+    gdp_percap_ppp_covid                    6.501e-06      2e-06      3.247      0.001    2.55e-06    1.05e-05
+    percap_domestic_health_expenditure_ppp -2.181e-05   3.26e-05     -0.669      0.505   -8.62e-05    4.26e-05
+    median_age                                 0.0086      0.006      1.377      0.170      -0.004       0.021
+    aged_65_older                              0.0036      0.009      0.393      0.695      -0.014       0.022
+    ==============================================================================
+    Omnibus:                        6.227   Durbin-Watson:                   2.053
+    Prob(Omnibus):                  0.044   Jarque-Bera (JB):                6.210
+    Skew:                          -0.465   Prob(JB):                       0.0448
+    Kurtosis:                       3.005   Cond. No.                     2.10e+05
+    ==============================================================================
+    
+    Warnings:
+    [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+    [2] The condition number is large, 2.1e+05. This might indicate that there are
+    strong multicollinearity or other numerical problems.
 
 
 
 ```python
 #Pandemic Democracy Violations
-reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + aged_65_older + median_age', covid_df).fit()
+reg_pandemic_violations = smf.ols('pandemic_dem_violation_index ~ transparency_index_2019 + gdp_percap_ppp_covid + percap_domestic_health_expenditure_ppp + aged_65_older + median_age', nonpanel_df).fit()
 ```
 
 
 ```python
-LRresult = reg_pandemic_violations.summary2().tables[1]
-LRresult
+print(reg_pandemic_violations.summary())
 ```
 
+                                     OLS Regression Results                                 
+    ========================================================================================
+    Dep. Variable:     pandemic_dem_violation_index   R-squared:                       0.258
+    Model:                                      OLS   Adj. R-squared:                  0.230
+    Method:                           Least Squares   F-statistic:                     9.379
+    Date:                          Mon, 15 Mar 2021   Prob (F-statistic):           1.09e-07
+    Time:                                  21:42:07   Log-Likelihood:                 42.792
+    No. Observations:                           141   AIC:                            -73.58
+    Df Residuals:                               135   BIC:                            -55.89
+    Df Model:                                     5                                         
+    Covariance Type:                      nonrobust                                         
+    ==========================================================================================================
+                                                 coef    std err          t      P>|t|      [0.025      0.975]
+    ----------------------------------------------------------------------------------------------------------
+    Intercept                                  0.3249      0.100      3.249      0.001       0.127       0.523
+    transparency_index_2019                   -0.1383      0.070     -1.989      0.049      -0.276      -0.001
+    gdp_percap_ppp_covid                   -8.428e-07   1.71e-06     -0.493      0.623   -4.23e-06    2.54e-06
+    percap_domestic_health_expenditure_ppp -3.841e-05   2.61e-05     -1.471      0.144   -9.01e-05    1.32e-05
+    aged_65_older                             -0.0117      0.008     -1.527      0.129      -0.027       0.003
+    median_age                                 0.0083      0.005      1.596      0.113      -0.002       0.019
+    ==============================================================================
+    Omnibus:                       23.492   Durbin-Watson:                   1.896
+    Prob(Omnibus):                  0.000   Jarque-Bera (JB):               30.999
+    Skew:                           0.943   Prob(JB):                     1.86e-07
+    Kurtosis:                       4.312   Cond. No.                     2.08e+05
+    ==============================================================================
+    
+    Warnings:
+    [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+    [2] The condition number is large, 2.08e+05. This might indicate that there are
+    strong multicollinearity or other numerical problems.
 
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Coef.</th>
-      <th>Std.Err.</th>
-      <th>t</th>
-      <th>P&gt;|t|</th>
-      <th>[0.025</th>
-      <th>0.975]</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Intercept</th>
-      <td>3.248865e-01</td>
-      <td>0.100008</td>
-      <td>3.248609</td>
-      <td>0.001464</td>
-      <td>0.127102</td>
-      <td>0.522671</td>
-    </tr>
-    <tr>
-      <th>transparency_index_2019</th>
-      <td>-1.383298e-01</td>
-      <td>0.069534</td>
-      <td>-1.989387</td>
-      <td>0.048679</td>
-      <td>-0.275846</td>
-      <td>-0.000813</td>
-    </tr>
-    <tr>
-      <th>gdp_percap_ppp_covid</th>
-      <td>-8.427588e-07</td>
-      <td>0.000002</td>
-      <td>-0.492633</td>
-      <td>0.623072</td>
-      <td>-0.000004</td>
-      <td>0.000003</td>
-    </tr>
-    <tr>
-      <th>percap_domestic_health_expenditure_ppp</th>
-      <td>-3.840644e-05</td>
-      <td>0.000026</td>
-      <td>-1.470562</td>
-      <td>0.143737</td>
-      <td>-0.000090</td>
-      <td>0.000013</td>
-    </tr>
-    <tr>
-      <th>aged_65_older</th>
-      <td>-1.174270e-02</td>
-      <td>0.007691</td>
-      <td>-1.526886</td>
-      <td>0.129129</td>
-      <td>-0.026952</td>
-      <td>0.003467</td>
-    </tr>
-    <tr>
-      <th>median_age</th>
-      <td>8.325270e-03</td>
-      <td>0.005217</td>
-      <td>1.595861</td>
-      <td>0.112858</td>
-      <td>-0.001992</td>
-      <td>0.018642</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
-
-```
