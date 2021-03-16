@@ -11,9 +11,9 @@ data/WVS_TimeSeries_R_v1_6.rds
 #data/merged_data.csv
 .RDataTmp
 .DS_Store
-.policy_lab_ndi.Rproj
-'.NDI Regressions.md'
-'.NDI Regressions.py'
+policy_lab_ndi.Rproj
+'NDI Regressions.md'
+'NDI Regressions.py'
 
 # Example code in package build process
 *-Ex.R
